@@ -31,6 +31,7 @@ export interface User {
   profile?: LearnerProfile;
   accessToken?: string;
   refreshToken?: string;
+  isPro?: boolean; // Commercial Feature
 }
 
 // MongoDB-like Document Structure (Notion Clone)
@@ -146,4 +147,14 @@ export interface LearningRoadmap {
   title: string;
   description: string;
   modules: RoadmapModule[];
+}
+
+// Command Palette Actions
+export interface CommandAction {
+  id: string;
+  label: string;
+  icon?: any;
+  shortcut?: string[];
+  perform: () => void;
+  group: 'navigation' | 'action' | 'ai';
 }

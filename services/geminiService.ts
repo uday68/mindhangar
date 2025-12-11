@@ -9,6 +9,20 @@ const getClient = (apiKey: string) => {
   return new GoogleGenAI({ apiKey });
 };
 
+export const testConnection = async (apiKey: string) => {
+  try {
+    const ai = getClient(apiKey);
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: 'Reply with "OK" if you receive this.',
+    });
+    return !!response.text;
+  } catch (error) {
+    console.error("AI Connection Test Error:", error);
+    return false;
+  }
+};
+
 export const generatePlanSuggestion = async (apiKey: string, goals: string[]) => {
   try {
     const ai = getClient(apiKey);
@@ -280,6 +294,45 @@ export const generateLearningRoadmap = async (
     return JSON.parse(text);
   } catch (error) {
     console.error("Roadmap Generation Error:", error);
+    return null;
+  }
+};
+
+export const analyzeFocusFrame = async (apiKey: string, imageBase64: string) => {
+  try {
+    const ai = getClient(apiKey);
+    
+    const prompt = `Analyze this webcam frame of a student working. 
+    Determine if they seem: 
+    1. Focused (looking at screen/notes)
+    2. Distracted (looking away, phone, talking, or sleeping)
+    3. Absent (no person visible)
+    
+    If distracted, provide a very short, gentle, encouraging phrase (max 6 words).`;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: [
+        { inlineData: { mimeType: "image/jpeg", data: imageBase64 } },
+        { text: prompt }
+      ],
+      config: {
+        responseMimeType: "application/json", 
+        responseSchema: {
+           type: Type.OBJECT,
+           properties: {
+             status: { type: Type.STRING, enum: ["focused", "distracted", "absent"] },
+             suggestion: { type: Type.STRING }
+           }
+        }
+      }
+    });
+    
+    const text = response.text;
+    return text ? JSON.parse(text) : null;
+  } catch (error) {
+    // console.error("Focus Analysis Error:", error); 
+    // Suppress heavy logging for frame errors to avoid console spam
     return null;
   }
 };

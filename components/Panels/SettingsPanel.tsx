@@ -1,9 +1,23 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useStore, LAYOUT_PRESETS } from '../../store/useStore';
+import { testConnection } from '../../services/geminiService';
 import { Icons } from '../Icons';
 
 export const SettingsPanel: React.FC = () => {
-  const { settings, updateSettings, userStats, resetLayout, user } = useStore();
+  const { settings, updateSettings, userStats, resetLayout, user, toggleMarketingMode } = useStore();
+  const [testStatus, setTestStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+
+  const handleTestConnection = async () => {
+    if (!settings.apiKey) return;
+    setTestStatus('loading');
+    const isWorking = await testConnection(settings.apiKey);
+    setTestStatus(isWorking ? 'success' : 'error');
+    
+    // Auto reset success message after 3 seconds
+    if (isWorking) {
+        setTimeout(() => setTestStatus('idle'), 3000);
+    }
+  };
 
   return (
     <div className="flex flex-col h-full gap-6 px-1">
@@ -59,19 +73,39 @@ export const SettingsPanel: React.FC = () => {
         </div>
         <div className="space-y-3">
           <div>
-            <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">Gemini API Key</label>
-            <div className="relative">
-              <input 
-                type="password"
-                value={settings.apiKey}
-                onChange={(e) => updateSettings({ apiKey: e.target.value })}
-                placeholder="Paste key starting with AIza..."
-                className="w-full bg-white border border-gray-200 rounded-lg pl-3 pr-8 py-2 text-xs focus:ring-2 focus:ring-indigo-500 outline-none"
-              />
-              <div 
-                className={`absolute right-2 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full ${settings.apiKey && settings.apiKey.length > 20 ? 'bg-green-500' : 'bg-gray-300'}`} 
-                title={settings.apiKey ? "Key configured" : "Key missing"} 
-              />
+            <div className="flex justify-between items-center mb-1">
+                <label className="text-[10px] uppercase font-bold text-gray-400">Gemini API Key</label>
+                {testStatus === 'success' && <span className="text-[10px] font-bold text-green-600 animate-in fade-in">Connection Verified</span>}
+                {testStatus === 'error' && <span className="text-[10px] font-bold text-red-500 animate-in fade-in">Connection Failed</span>}
+            </div>
+            <div className="relative flex gap-2">
+              <div className="relative flex-1">
+                <input 
+                    type="password"
+                    value={settings.apiKey}
+                    onChange={(e) => updateSettings({ apiKey: e.target.value })}
+                    placeholder="Paste key starting with AIza..."
+                    className={`w-full bg-white border rounded-lg pl-3 pr-8 py-2 text-xs focus:ring-2 focus:ring-indigo-500 outline-none transition-colors ${testStatus === 'error' ? 'border-red-300' : 'border-gray-200'}`}
+                />
+                <div 
+                    className={`absolute right-2 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full ${settings.apiKey && settings.apiKey.length > 20 ? 'bg-green-500' : 'bg-gray-300'}`} 
+                    title={settings.apiKey ? "Key format valid" : "Key missing"} 
+                />
+              </div>
+              <button 
+                onClick={handleTestConnection}
+                disabled={!settings.apiKey || testStatus === 'loading'}
+                className={`px-4 rounded-lg text-xs font-bold transition-all ${
+                    testStatus === 'loading' ? 'bg-gray-100 text-gray-400' :
+                    testStatus === 'success' ? 'bg-green-100 text-green-700' :
+                    testStatus === 'error' ? 'bg-red-100 text-red-700' :
+                    'bg-indigo-600 text-white hover:bg-indigo-700'
+                }`}
+              >
+                {testStatus === 'loading' ? <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" /> : 
+                 testStatus === 'success' ? 'OK' : 
+                 testStatus === 'error' ? 'Retry' : 'Test'}
+              </button>
             </div>
             <p className="text-[10px] text-gray-400 mt-1">Required for Chat, Summarization, and Planner. Saved locally.</p>
           </div>
@@ -108,6 +142,18 @@ export const SettingsPanel: React.FC = () => {
           </div>
           <button className="text-xs text-indigo-600 font-bold hover:underline">Connect</button>
         </div>
+      </section>
+      
+      {/* Dev Tools */}
+      <section className="border-t border-gray-100 pt-4">
+        <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Developer Tools</h4>
+        <button 
+          onClick={toggleMarketingMode}
+          className="w-full bg-slate-800 text-white rounded-lg py-3 text-xs font-bold hover:bg-black transition-colors flex items-center justify-center gap-2"
+        >
+          <Icons.MonitorPlay size={14} /> Open Asset Generator
+        </button>
+        <p className="text-[9px] text-gray-400 mt-1 text-center">Use this to generate screenshots for Kaggle/YouTube.</p>
       </section>
 
       <div className="mt-auto text-center">

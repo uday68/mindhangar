@@ -1,14 +1,20 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Icons } from '../Icons';
 import { useStore } from '../../store/useStore';
+import { analyzeFocusFrame } from '../../services/geminiService';
 
 export const FocusPanel: React.FC = () => {
-  const { setFocusMode, isFocusMode, focusSession, startSession, stopSession } = useStore();
+  const { setFocusMode, isFocusMode, focusSession, startSession, stopSession, settings } = useStore();
   
   // Local UI state
   const [deepFocusEnabled, setDeepFocusEnabled] = useState(false);
   const [cameraActive, setCameraActive] = useState(false);
   const [currentDuration, setCurrentDuration] = useState(25); // Current timer target in minutes
+
+  // AI Monitor State
+  const [focusState, setFocusState] = useState<'idle' | 'focused' | 'distracted' | 'absent'>('idle');
+  const [aiSuggestion, setAiSuggestion] = useState('');
+  const [lastCheckTime, setLastCheckTime] = useState<Date | null>(null);
 
   // Settings State
   const [showSettings, setShowSettings] = useState(false);
@@ -27,7 +33,6 @@ export const FocusPanel: React.FC = () => {
   const startTimeRef = useRef<number>(0);
 
   const videoRef = useRef<HTMLVideoElement>(null);
-
   const { isActive, timeLeft, mode } = focusSession;
 
   // Sync current duration when config changes (if not active)
@@ -36,6 +41,47 @@ export const FocusPanel: React.FC = () => {
       setCurrentDuration(config.focusDuration);
     }
   }, [config.focusDuration, isActive]);
+
+  // AI Monitoring Loop
+  useEffect(() => {
+    let interval: any;
+    
+    const captureAndAnalyze = async () => {
+       if (!videoRef.current || !settings.apiKey || !cameraActive) return;
+       
+       // Create canvas to capture frame
+       const canvas = document.createElement('canvas');
+       canvas.width = 320; // Reduce size for speed
+       canvas.height = 240;
+       const ctx = canvas.getContext('2d');
+       if (!ctx) return;
+       
+       ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+       const base64 = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
+       
+       const result = await analyzeFocusFrame(settings.apiKey, base64);
+       setLastCheckTime(new Date());
+       
+       if (result) {
+          setFocusState(result.status as any);
+          if (result.status === 'distracted' || result.status === 'absent') {
+             setAiSuggestion(result.suggestion || "Let's get back to it!");
+             // Auto-dismiss suggestion after 5s
+             setTimeout(() => setAiSuggestion(''), 5000);
+          } else {
+             setAiSuggestion('');
+          }
+       }
+    };
+
+    if (cameraActive && settings.apiKey) {
+      // Check every 15 seconds to respect rate limits while maintaining utility
+      interval = setInterval(captureAndAnalyze, 15000); 
+    }
+    
+    return () => clearInterval(interval);
+  }, [cameraActive, settings.apiKey]);
+
 
   const handleStartFlow = () => {
     if (isActive) {
@@ -103,6 +149,7 @@ export const FocusPanel: React.FC = () => {
       stream?.getTracks().forEach(track => track.stop());
       if (videoRef.current) videoRef.current.srcObject = null;
       setCameraActive(false);
+      setFocusState('idle');
     } else {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
@@ -281,13 +328,33 @@ export const FocusPanel: React.FC = () => {
   // Normal Focus Panel
   return (
     <div className="flex flex-col h-full gap-4 items-center justify-center p-2 relative group">
+      
+      {/* LOCKED MODE INDICATOR */}
       {isFocusMode && (
-        <div className="absolute top-2 right-2 bg-red-100 text-red-600 px-2 py-1 rounded text-[10px] font-bold animate-pulse">
-          LOCKED MODE ACTIVE
+        <div className="absolute top-2 right-2 flex flex-col items-end gap-1">
+          <div className="bg-red-100 text-red-600 px-2 py-1 rounded text-[10px] font-bold animate-pulse">
+            LOCKED MODE ACTIVE
+          </div>
+          {cameraActive && (
+             <div className={`px-2 py-1 rounded text-[10px] font-bold border flex items-center gap-1 ${focusState === 'focused' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-orange-100 text-orange-700 border-orange-200'}`}>
+               <span className={`w-1.5 h-1.5 rounded-full ${focusState === 'focused' ? 'bg-green-500' : 'bg-orange-500'} animate-pulse`} />
+               {focusState === 'idle' ? 'MONITORING' : focusState.toUpperCase()}
+             </div>
+          )}
         </div>
       )}
       
-      {/* Settings Toggle (Only visible when not active) */}
+      {/* AI Suggestion Popup */}
+      {aiSuggestion && (
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 bg-orange-600 text-white px-4 py-2 rounded-full shadow-xl animate-in fade-in slide-in-from-top-4 font-medium text-sm text-center w-max max-w-[90%]">
+          <div className="flex items-center gap-2">
+            <Icons.Brain size={16} />
+            <span>{aiSuggestion}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Settings Toggle (Only visible when not active or if unlocked) */}
       {!isActive && !isFocusMode && (
         <button 
           onClick={() => setShowSettings(true)}
@@ -359,36 +426,36 @@ export const FocusPanel: React.FC = () => {
         )}
       </div>
 
-      {/* Camera Section */}
-      {!isFocusMode && (
-        <div className="w-full max-w-[200px] bg-black/5 rounded-xl overflow-hidden relative aspect-video flex items-center justify-center border border-gray-200 transition-all hover:border-teal-300">
-          <video 
-            ref={videoRef} 
-            autoPlay 
-            playsInline 
-            muted 
-            className={`w-full h-full object-cover ${!cameraActive ? 'hidden' : ''}`} 
-          />
-          {!cameraActive && (
-            <div className="text-center">
-              <Icons.Eye className="mx-auto text-gray-400 mb-2 w-6 h-6" />
-              <p className="text-[10px] text-gray-500">Camera off</p>
-            </div>
-          )}
-          <button 
-            onClick={toggleCamera} 
-            className="absolute bottom-1 right-1 bg-white/80 backdrop-blur text-[10px] px-2 py-0.5 rounded shadow-sm hover:bg-white font-medium"
-          >
-            {cameraActive ? 'Stop' : 'Track'}
-          </button>
-          
-          {cameraActive && (
-             <div className="absolute top-1 left-1 px-1.5 py-0.5 bg-black/50 backdrop-blur rounded text-[8px] text-white font-mono">
-               SENS: {config.sensitivity.toUpperCase()}
-             </div>
-          )}
-        </div>
-      )}
+      {/* Camera Section - Always render but handle visibility */}
+      <div 
+        className={`w-full max-w-[200px] bg-black/5 rounded-xl overflow-hidden relative aspect-video flex items-center justify-center border border-gray-200 transition-all hover:border-teal-300 ${isFocusMode ? 'opacity-0 pointer-events-none absolute bottom-4 right-4 h-0 w-0' : ''}`}
+      >
+        <video 
+          ref={videoRef} 
+          autoPlay 
+          playsInline 
+          muted 
+          className={`w-full h-full object-cover ${!cameraActive ? 'hidden' : ''}`} 
+        />
+        {!cameraActive && (
+          <div className="text-center">
+            <Icons.Eye className="mx-auto text-gray-400 mb-2 w-6 h-6" />
+            <p className="text-[10px] text-gray-500">AI Monitor Off</p>
+          </div>
+        )}
+        <button 
+          onClick={toggleCamera} 
+          className="absolute bottom-1 right-1 bg-white/80 backdrop-blur text-[10px] px-2 py-0.5 rounded shadow-sm hover:bg-white font-medium"
+        >
+          {cameraActive ? 'Stop' : 'Track'}
+        </button>
+        
+        {cameraActive && (
+           <div className={`absolute top-1 left-1 px-1.5 py-0.5 backdrop-blur rounded text-[8px] font-mono border ${focusState === 'focused' ? 'bg-green-500/80 text-white border-green-400' : focusState === 'distracted' ? 'bg-orange-500/80 text-white border-orange-400' : 'bg-black/50 text-white border-transparent'}`}>
+             {focusState === 'idle' ? 'INIT...' : focusState.toUpperCase()}
+           </div>
+        )}
+      </div>
     </div>
   );
 };

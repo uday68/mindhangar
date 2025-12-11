@@ -3,8 +3,16 @@ import { summarizeContent } from '../../services/geminiService';
 import { useStore } from '../../store/useStore';
 import { Icons } from '../Icons';
 
+// Mock approved list of educational video IDs (e.g., Lofi Girl, Study Music)
+const APPROVED_EDUCATIONAL_IDS = [
+  'jfKfPfyJRdk', // Lofi Girl - beats to relax/study to
+  '5qap5aO4i9A', // Lofi Girl - Synthwave
+  'M5QY2_8704o', // Relaxing Jazz
+  'DWcJFNfaw9c', // Ambient Study
+];
+
 export const VideoPanel: React.FC = () => {
-  const { focusSession, settings } = useStore();
+  const { focusSession, settings, isFocusMode, setCurrentTranscript } = useStore();
   const [activeTab, setActiveTab] = useState<'transcript' | 'summary'>('transcript');
   const [videoUrl, setVideoUrl] = useState('');
   const [embedId, setEmbedId] = useState('');
@@ -15,6 +23,11 @@ export const VideoPanel: React.FC = () => {
   // Restriction State
   const [isRestricted, setIsRestricted] = useState(false);
   const [warning, setWarning] = useState<string | null>(null);
+
+  // Sync Transcript to Global Store (Commercial Feature)
+  useEffect(() => {
+    setCurrentTranscript(transcriptText);
+  }, [transcriptText, setCurrentTranscript]);
 
   // Extract ID from YouTube URL
   const extractVideoID = (url: string) => {
@@ -27,34 +40,51 @@ export const VideoPanel: React.FC = () => {
     const id = extractVideoID(videoUrl);
     if (id) {
       setEmbedId(id);
-      setIsRestricted(false); // We no longer restrict IDs statically
+      // Restriction check happens in useEffect
     } else {
       alert("Invalid YouTube URL");
     }
   };
 
-  // React to Focus Session changes
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        setTranscriptText(ev.target?.result as string);
+      };
+      reader.readAsText(file);
+    }
+  };
+
+  // Enforce Focus Mode Restrictions
   useEffect(() => {
-    // Shutdown Logic: If session ends (isActive becomes false), clear video? 
-    // Or if Break Mode ending?
-    // Requirement: "shut down before there will be warning"
+    if (embedId) {
+      if (isFocusMode) {
+        if (!APPROVED_EDUCATIONAL_IDS.includes(embedId)) {
+          setIsRestricted(true);
+        } else {
+          setIsRestricted(false);
+        }
+      } else {
+        setIsRestricted(false);
+      }
+    }
+  }, [isFocusMode, embedId]);
+
+  // React to Focus Session Timer changes (for warnings)
+  useEffect(() => {
     if (focusSession.isActive) {
       if (focusSession.timeLeft < 30 && focusSession.mode === 'break') {
         setWarning(`Break ending in ${focusSession.timeLeft}s! Player will close.`);
       } else if (focusSession.timeLeft < 10 && focusSession.mode === 'focus') {
-         // Maybe warn about upcoming break?
          setWarning(null);
       } else {
         setWarning(null);
       }
     } else {
-      // Session inactive
       if (embedId && warning) {
-        // If we had a warning, it means we just finished a session. Stop video.
-        setEmbedId('');
-        setVideoUrl('');
         setWarning(null);
-        alert("Session Ended. Video player shut down.");
       }
     }
 
@@ -81,11 +111,16 @@ export const VideoPanel: React.FC = () => {
         {embedId ? (
           <>
             {isRestricted ? (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900 text-white p-6 text-center">
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900 text-white p-6 text-center z-10">
                  <Icons.Eye size={48} className="text-red-500 mb-4" />
-                 <h3 className="text-xl font-bold mb-2">Focus Mode Restriction</h3>
-                 <p className="text-sm text-gray-300">This channel/video is restricted during study sessions.</p>
-                 <button onClick={() => setEmbedId('')} className="mt-4 px-4 py-2 bg-gray-800 rounded hover:bg-gray-700 text-sm">Close Player</button>
+                 <h3 className="text-xl font-bold mb-2">Focus Mode Active</h3>
+                 <p className="text-sm text-gray-300 max-w-xs mx-auto">
+                   Only approved study playlists (e.g. Lofi Girl) are allowed during deep work sessions.
+                 </p>
+                 <div className="flex gap-3 mt-6">
+                    <button onClick={() => setEmbedId('')} className="px-4 py-2 bg-gray-800 rounded-lg hover:bg-gray-700 text-sm font-medium transition-colors">Close Player</button>
+                    <button onClick={() => setEmbedId('jfKfPfyJRdk')} className="px-4 py-2 bg-teal-600 rounded-lg hover:bg-teal-700 text-sm font-medium transition-colors">Load Lofi Girl</button>
+                 </div>
               </div>
             ) : (
                <iframe
@@ -99,7 +134,7 @@ export const VideoPanel: React.FC = () => {
             )}
             
             {/* Warning Overlay */}
-            {warning && (
+            {warning && !isRestricted && (
               <div className="absolute top-0 left-0 right-0 bg-red-600 text-white text-center text-xs font-bold py-1 animate-pulse z-50">
                 {warning}
               </div>
@@ -117,8 +152,10 @@ export const VideoPanel: React.FC = () => {
                />
                <button onClick={handleLoadVideo} className="bg-teal-600 text-white px-3 py-1 rounded text-xs hover:bg-teal-700">Load</button>
             </div>
-            {focusSession.isActive && focusSession.mode === 'focus' && (
-               <p className="text-[10px] text-green-400 mt-2 text-center">Focus Mode Active: Video player enabled for study material.</p>
+            {isFocusMode && (
+               <p className="text-[10px] text-orange-400 mt-2 text-center flex items-center gap-1 justify-center">
+                 <Icons.ShieldAlert size={10} /> Focus Mode: Entertainment blocked.
+               </p>
             )}
           </div>
         )}
@@ -147,10 +184,14 @@ export const VideoPanel: React.FC = () => {
              <div className="flex gap-2 mb-2">
                 <input 
                   className="w-full text-xs bg-gray-100 border-none rounded p-2 focus:ring-1 focus:ring-teal-500" 
-                  placeholder="Paste transcript here..."
+                  placeholder="Paste transcript or upload..."
                   value={transcriptText}
                   onChange={(e) => setTranscriptText(e.target.value)}
                 />
+                <label className="cursor-pointer bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 px-3 py-1.5 rounded text-xs font-medium flex items-center gap-2 whitespace-nowrap transition-colors">
+                  <input type="file" className="hidden" accept=".txt,.vtt,.srt,.md" onChange={handleFileUpload} />
+                  <Icons.FileText size={14} /> Upload
+                </label>
              </div>
              {transcriptText ? (
                <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap font-sans">{transcriptText}</p>
@@ -158,8 +199,7 @@ export const VideoPanel: React.FC = () => {
                <div className="flex flex-col items-center justify-center h-full text-gray-400 gap-2">
                  <span className="text-xs">No transcript available</span>
                  <p className="text-[10px] text-gray-400 text-center px-4">
-                   Note: Automatic YouTube transcription requires a backend service (e.g., Python youtube-transcript-api). 
-                   For this demo, please paste transcript text manually.
+                   Upload a .txt, .vtt, or .srt file to generate a summary using Gemini 2.5.
                  </p>
                </div>
              )}

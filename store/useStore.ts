@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { PanelType, PanelState, Note, UserStats, Notification, AppSettings, FocusSession, User, Page, Block, BlockType, LearnerProfile, AuthProvider } from '../types';
@@ -36,6 +35,15 @@ interface AppState {
   updateBlock: (blockId: string, content: string, properties?: any) => void;
   deleteBlock: (pageId: string, blockId: string) => void;
   
+  // Global Context for AI (Commercial Feature)
+  currentTranscript: string;
+  setCurrentTranscript: (text: string) => void;
+
+  // Command Palette
+  isCommandPaletteOpen: boolean;
+  toggleCommandPalette: () => void;
+  setCommandPaletteOpen: (isOpen: boolean) => void;
+
   // Legacy (Keep for compatibility/search until fully migrated)
   notes: Note[];
   addNote: () => void;
@@ -65,6 +73,10 @@ interface AppState {
   // Settings
   settings: AppSettings;
   updateSettings: (s: Partial<AppSettings>) => void;
+
+  // Marketing Tools
+  marketingMode: boolean;
+  toggleMarketingMode: () => void;
 }
 
 // Layout Definitions
@@ -152,7 +164,7 @@ export const useStore = create<AppState>()(
           
           set({
             isLoadingAuth: false,
-            user,
+            user: { ...user, isPro: true }, // Auto-enable Pro for demo
             showOnboarding: true, // Trigger onboarding for demo
             settings: { ...get().settings, username: user.name }
           });
@@ -275,6 +287,15 @@ export const useStore = create<AppState>()(
         };
       }),
 
+      // AI Context Sharing
+      currentTranscript: '',
+      setCurrentTranscript: (text) => set({ currentTranscript: text }),
+
+      // Command Palette
+      isCommandPaletteOpen: false,
+      toggleCommandPalette: () => set((state) => ({ isCommandPaletteOpen: !state.isCommandPaletteOpen })),
+      setCommandPaletteOpen: (isOpen) => set({ isCommandPaletteOpen: isOpen }),
+
       // Legacy Notes
       notes: [],
       addNote: () => {}, 
@@ -284,7 +305,7 @@ export const useStore = create<AppState>()(
       isFocusMode: false,
       userStats: { xp: 120, level: 2, streak: 3 },
       notifications: [
-        { id: '1', type: 'info', title: 'Welcome', message: 'Get started by setting a goal in the Planner.', timestamp: new Date(), read: false }
+        { id: '1', type: 'info', title: 'Welcome', message: 'Press Cmd+K to open the Command Palette.', timestamp: new Date(), read: false }
       ],
       settings: {
         apiKey: process.env.API_KEY || '',
@@ -365,7 +386,11 @@ export const useStore = create<AppState>()(
       })),
       markRead: (id) => set((state) => ({ notifications: state.notifications.map(n => n.id === id ? { ...n, read: true } : n) })),
       clearNotifications: () => set({ notifications: [] }),
-      updateSettings: (s) => set((state) => ({ settings: { ...state.settings, ...s } }))
+      updateSettings: (s) => set((state) => ({ settings: { ...state.settings, ...s } })),
+
+      // Marketing State
+      marketingMode: false,
+      toggleMarketingMode: () => set((state) => ({ marketingMode: !state.marketingMode })),
     }),
     {
       name: 'mindhangar-storage', // unique name
