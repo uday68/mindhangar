@@ -4,7 +4,7 @@ import { useStore } from '../../store/useStore';
 import { analyzeFocusFrame } from '../../services/geminiService';
 
 export const FocusPanel: React.FC = () => {
-  const { setFocusMode, isFocusMode, focusSession, startSession, stopSession, settings } = useStore();
+  const { setFocusMode, isFocusMode, focusSession, startSession, stopSession, settings, user, toggleUpgradeModal } = useStore();
   
   // Local UI state
   const [deepFocusEnabled, setDeepFocusEnabled] = useState(false);
@@ -144,6 +144,12 @@ export const FocusPanel: React.FC = () => {
   };
 
   const toggleCamera = async () => {
+    // COMMERCIAL: Gate this feature
+    if (!user?.isPro) {
+      toggleUpgradeModal();
+      return;
+    }
+
     if (cameraActive) {
       const stream = videoRef.current?.srcObject as MediaStream;
       stream?.getTracks().forEach(track => track.stop());
@@ -453,6 +459,12 @@ export const FocusPanel: React.FC = () => {
         {cameraActive && (
            <div className={`absolute top-1 left-1 px-1.5 py-0.5 backdrop-blur rounded text-[8px] font-mono border ${focusState === 'focused' ? 'bg-green-500/80 text-white border-green-400' : focusState === 'distracted' ? 'bg-orange-500/80 text-white border-orange-400' : 'bg-black/50 text-white border-transparent'}`}>
              {focusState === 'idle' ? 'INIT...' : focusState.toUpperCase()}
+           </div>
+        )}
+        
+        {!user?.isPro && (
+           <div className="absolute top-1 right-1">
+             <div className="bg-indigo-600 text-white text-[8px] font-bold px-1.5 py-0.5 rounded shadow">PRO</div>
            </div>
         )}
       </div>

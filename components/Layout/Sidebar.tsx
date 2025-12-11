@@ -4,7 +4,7 @@ import { Icons } from '../Icons';
 import { PanelType } from '../../types';
 
 export const Sidebar: React.FC = () => {
-  const { activePanels, togglePanel, isFocusMode, userStats, notifications, user } = useStore();
+  const { activePanels, togglePanel, isFocusMode, userStats, notifications, user, toggleUpgradeModal } = useStore();
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -80,6 +80,17 @@ export const Sidebar: React.FC = () => {
 
       {/* Bottom Nav */}
       <div className="mt-auto flex flex-col gap-4 items-center w-full">
+        {/* Upgrade Button (Visible if not Pro) */}
+        {user && !user.isPro && (
+          <button 
+            onClick={toggleUpgradeModal}
+            className="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-300 hover:scale-110 transition-transform animate-pulse"
+            title="Upgrade to Pro"
+          >
+            <Icons.Sparkles size={16} />
+          </button>
+        )}
+
         <NavItem id="chat" icon={Icons.MessageCircle} label="AI Assistant" />
         <NavItem id="notifications" icon={Icons.Bell} label="Notifications" badge={unreadCount} />
         
@@ -112,6 +123,11 @@ export const Sidebar: React.FC = () => {
                  <div className="w-full h-full flex items-center justify-center bg-teal-100 text-teal-600 font-bold">{user?.name?.[0] || 'U'}</div>
                )}
              </div>
+             
+             {/* Pro Badge */}
+             {user?.isPro && (
+                <div className="absolute -top-1 -right-1 bg-indigo-600 text-[8px] text-white font-bold px-1.5 py-0.5 rounded border border-white">PRO</div>
+             )}
           </div>
           
           {/* Level Badge Pill */}

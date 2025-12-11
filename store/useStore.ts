@@ -18,6 +18,7 @@ interface AppState {
   login: (provider: AuthProvider) => Promise<void>;
   logout: () => void;
   completeOnboarding: (profile: LearnerProfile) => void;
+  upgradeToPro: () => void; // Commercial
 
   // MongoDB-like Store (Normalized)
   pages: Record<string, Page>;
@@ -43,6 +44,10 @@ interface AppState {
   isCommandPaletteOpen: boolean;
   toggleCommandPalette: () => void;
   setCommandPaletteOpen: (isOpen: boolean) => void;
+
+  // Commercial: Upgrade Modal
+  isUpgradeModalOpen: boolean;
+  toggleUpgradeModal: () => void;
 
   // Legacy (Keep for compatibility/search until fully migrated)
   notes: Note[];
@@ -164,8 +169,9 @@ export const useStore = create<AppState>()(
           
           set({
             isLoadingAuth: false,
-            user: { ...user, isPro: true }, // Auto-enable Pro for demo
-            showOnboarding: true, // Trigger onboarding for demo
+            // START COMMERCIAL CHANGE: Defaults to Free tier to show upgrade flow
+            user: { ...user, isPro: false }, 
+            showOnboarding: true,
             settings: { ...get().settings, username: user.name }
           });
         } catch (error) {
@@ -186,6 +192,22 @@ export const useStore = create<AppState>()(
           user: { ...state.user, profile },
           showOnboarding: false
         };
+      }),
+
+      upgradeToPro: () => set((state) => {
+        if (!state.user) return state;
+        return {
+          user: { ...state.user, isPro: true },
+          isUpgradeModalOpen: false,
+          notifications: [{
+            id: crypto.randomUUID(),
+            type: 'success',
+            title: 'Welcome to Pro!',
+            message: 'You now have access to AI Camera, Context Chat, and Unlimited Search.',
+            timestamp: new Date(),
+            read: false
+          }, ...state.notifications]
+        }
       }),
 
       // Notion-like Store - Starts Empty (Dynamic)
@@ -295,6 +317,10 @@ export const useStore = create<AppState>()(
       isCommandPaletteOpen: false,
       toggleCommandPalette: () => set((state) => ({ isCommandPaletteOpen: !state.isCommandPaletteOpen })),
       setCommandPaletteOpen: (isOpen) => set({ isCommandPaletteOpen: isOpen }),
+
+      // Upgrade Modal
+      isUpgradeModalOpen: false,
+      toggleUpgradeModal: () => set((state) => ({ isUpgradeModalOpen: !state.isUpgradeModalOpen })),
 
       // Legacy Notes
       notes: [],

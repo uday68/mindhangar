@@ -5,10 +5,11 @@ import { LoginScreen } from './components/Auth/LoginScreen';
 import { OnboardingModal } from './components/Auth/OnboardingModal';
 import { KaggleThumbnail } from './components/Marketing/KaggleThumbnail';
 import { CommandPalette } from './components/Shared/CommandPalette';
+import { UpgradeModal } from './components/Shared/UpgradeModal';
 import { useStore } from './store/useStore';
 
 function App() {
-  const { user, showOnboarding, marketingMode, toggleMarketingMode, toggleCommandPalette } = useStore();
+  const { user, showOnboarding, marketingMode, toggleMarketingMode, toggleCommandPalette, isUpgradeModalOpen } = useStore();
 
   // Global Keyboard Shortcuts
   useEffect(() => {
@@ -33,6 +34,7 @@ function App() {
       <Sidebar />
       <Workspace />
       <CommandPalette />
+      {isUpgradeModalOpen && <UpgradeModal />}
       {showOnboarding && <OnboardingModal />}
       {marketingMode && <KaggleThumbnail onClose={toggleMarketingMode} />}
     </div>

@@ -80,6 +80,32 @@ export const NotesPanel: React.FC = () => {
 
   const activePage = activePageId ? pages[activePageId] : null;
 
+  const handleExport = () => {
+    if (!activePage) return;
+    
+    let content = `# ${activePage.title}\n\n`;
+    activePage.blockIds.forEach(id => {
+       const b = blocks[id];
+       if (b) {
+         if (b.type === 'h1') content += `# ${b.content}\n`;
+         else if (b.type === 'h2') content += `## ${b.content}\n`;
+         else if (b.type === 'todo') content += `- [ ] ${b.content}\n`;
+         else if (b.type === 'bullet') content += `- ${b.content}\n`;
+         else content += `${b.content}\n`;
+       }
+    });
+
+    const blob = new Blob([content], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${activePage.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.md`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   // Render Page Tree Recursive (Simplified for flat list now, can be recursive later)
   const renderSidebar = () => (
     <div className="w-48 flex flex-col bg-gray-50/50 border-r border-gray-100 h-full">
@@ -115,31 +141,13 @@ export const NotesPanel: React.FC = () => {
     addBlock(activePageId, 'text', '', currentBlockId);
   };
 
-  // Block Type commands handling (simple version)
   const handleBlockUpdate = (blockId: string, content: string) => {
     // Slash commands simulation
     if (content === '/h1 ') {
-      updateBlock(blockId, '', { }); // Clear content
-      // Need a way to swap type. For MVP, we'll just implement text editing.
-      // Real implementation would swap block type here.
-      // Let's cheat: we can't swap type easily with current store method without `updateBlockType`.
-      // Let's assume user just types text for now.
+      updateBlock(blockId, '', { }); 
+      // Cheat: Would swap type here in full version
     }
     updateBlock(blockId, content);
-  };
-  
-  // Custom command bar to change block type
-  const [commandOpen, setCommandOpen] = useState<{id: string, top: number, left: number} | null>(null);
-
-  const switchType = (blockId: string, type: BlockType) => {
-    const b = blocks[blockId];
-    // We need to actually replace the block or update its type in store.
-    // Since I missed adding `updateBlockType` in store, I'll hack it: remove and add (loses position) or just update content with prefix logic if I had it.
-    // For this demo, let's just create a new block of that type and remove old one if empty?
-    // Better: Add a `changeBlockType` helper here locally if the store supported it.
-    // I will use a simple hack: I'll assume `updateBlock` spreads properties, but I defined `type` on the root of Block interface, not properties.
-    // Store refactor needed for full type switching.
-    // FOR NOW: Just basic text blocks.
   };
 
   return (
@@ -151,7 +159,15 @@ export const NotesPanel: React.FC = () => {
         {activePage ? (
           <>
             {/* Page Cover (Optional) */}
-            <div className="h-24 bg-gradient-to-r from-teal-50 to-indigo-50 border-b border-gray-100 group relative">
+            <div className="h-24 bg-gradient-to-r from-teal-50 to-indigo-50 border-b border-gray-100 group relative flex justify-end p-2">
+               {/* Export Button */}
+               <button 
+                 onClick={handleExport} 
+                 className="bg-white/50 hover:bg-white text-gray-500 px-3 py-1 rounded text-xs font-medium backdrop-blur transition-colors flex items-center gap-1 h-fit shadow-sm"
+               >
+                 <Icons.Save size={14} /> Export
+               </button>
+
                {/* Icon */}
                <div className="absolute -bottom-5 left-8 text-4xl group-hover:scale-110 transition-transform cursor-pointer shadow-sm rounded-full bg-white p-1">
                  {activePage.icon}
@@ -179,8 +195,6 @@ export const NotesPanel: React.FC = () => {
                       onUpdate={(val) => {
                         // Handle slash command visually (mock)
                         if (val === '/h1') {
-                           // In a real app, this changes state. 
-                           // For this demo, we'll auto-replace with a Heading block logic if store allowed.
                            alert("Pro Tip: In a full implementation, this converts to Heading 1!");
                         }
                         updateBlock(blockId, val);
