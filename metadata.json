@@ -1,0 +1,8 @@
+{
+  "name": "MindHangar",
+  "description": "Interactive Student Planner with unified workspace, video summarization, and AI coaching.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
