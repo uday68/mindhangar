@@ -3,6 +3,8 @@ import { performSemanticSearch } from '../../services/geminiService';
 import { SearchResult } from '../../types';
 import { useStore } from '../../store/useStore';
 import { Icons } from '../Icons';
+import { Card } from '../Shared/Card';
+import { Thumbnail } from '../Shared/Thumbnail';
 
 export const SearchPanel: React.FC = () => {
   const [query, setQuery] = useState('');
@@ -74,46 +76,56 @@ export const SearchPanel: React.FC = () => {
         )}
 
         {results.map((res, idx) => (
-          <div key={idx} className="bg-white p-4 rounded-xl border border-gray-100 hover:border-teal-300 hover:shadow-lg transition-all group relative overflow-hidden">
+          <Card key={idx} hoverable className="group relative">
             {/* Quality Score Badge */}
             <div className={`absolute top-0 right-0 px-2 py-1 rounded-bl-lg border-l border-b text-[10px] font-bold ${getQualityColor(res.qualityScore)}`}>
                {res.qualityScore} QS
             </div>
 
-            <div className="pr-8">
-              <h4 className="font-bold text-gray-800 text-sm group-hover:text-teal-700 leading-tight mb-1 cursor-pointer hover:underline">
-                <a href={res.url} target="_blank" rel="noreferrer">{res.title}</a>
-              </h4>
-              <div className="flex items-center gap-2 text-[10px] text-gray-400 uppercase tracking-wider mb-2">
-                 <span>{res.source}</span>
-                 <span>•</span>
-                 <span>{res.date}</span>
+            <div className="flex gap-3">
+              {/* Optional Thumbnail Placeholder if we had images */}
+              <Thumbnail 
+                size="md" 
+                fallbackIcon={Icons.ExternalLink} 
+                className="shrink-0 hidden sm:flex" 
+                bgColor="bg-gray-50"
+              />
+
+              <div className="flex-1 min-w-0 pr-8">
+                <h4 className="font-bold text-gray-800 text-sm group-hover:text-teal-700 leading-tight mb-1 cursor-pointer hover:underline">
+                  <a href={res.url} target="_blank" rel="noreferrer">{res.title}</a>
+                </h4>
+                <div className="flex items-center gap-2 text-[10px] text-gray-400 uppercase tracking-wider mb-2">
+                   <span>{res.source}</span>
+                   <span>•</span>
+                   <span>{res.date}</span>
+                </div>
+                
+                <p className="text-xs text-gray-600 line-clamp-2 mb-3 leading-relaxed">{res.snippet}</p>
+                
+                {/* Actions Toolbar */}
+                <div className="flex items-center gap-2 pt-2 border-t border-gray-50 opacity-80 group-hover:opacity-100 transition-opacity">
+                   <button 
+                     onClick={addNote}
+                     className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-gray-50 hover:bg-teal-50 text-gray-600 hover:text-teal-700 text-[10px] font-medium transition-colors"
+                   >
+                     <Icons.FileText size={12} /> Save Note
+                   </button>
+                   <button className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-gray-50 hover:bg-indigo-50 text-gray-600 hover:text-indigo-700 text-[10px] font-medium transition-colors">
+                     <Icons.Sparkles size={12} /> Summarize
+                   </button>
+                   <a 
+                     href={res.url} 
+                     target="_blank" 
+                     rel="noreferrer"
+                     className="ml-auto text-gray-400 hover:text-gray-700"
+                   >
+                     <Icons.ExternalLink size={12} />
+                   </a>
+                </div>
               </div>
             </div>
-            
-            <p className="text-xs text-gray-600 line-clamp-2 mb-3 leading-relaxed">{res.snippet}</p>
-            
-            {/* Actions Toolbar */}
-            <div className="flex items-center gap-2 pt-2 border-t border-gray-50 opacity-80 group-hover:opacity-100 transition-opacity">
-               <button 
-                 onClick={addNote}
-                 className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-gray-50 hover:bg-teal-50 text-gray-600 hover:text-teal-700 text-[10px] font-medium transition-colors"
-               >
-                 <Icons.FileText size={12} /> Save Note
-               </button>
-               <button className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-gray-50 hover:bg-indigo-50 text-gray-600 hover:text-indigo-700 text-[10px] font-medium transition-colors">
-                 <Icons.Sparkles size={12} /> Summarize
-               </button>
-               <a 
-                 href={res.url} 
-                 target="_blank" 
-                 rel="noreferrer"
-                 className="ml-auto text-gray-400 hover:text-gray-700"
-               >
-                 <Icons.ExternalLink size={12} />
-               </a>
-            </div>
-          </div>
+          </Card>
         ))}
       </div>
     </div>

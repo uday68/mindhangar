@@ -75,7 +75,7 @@ export const ChatPanel: React.FC = () => {
       setMessages(prev => [...prev, { role: 'model', text: "" }]); // Placeholder
 
       for await (const chunk of result) {
-        const text = chunk.text();
+        const text = chunk.text;
         fullText += text;
         setMessages(prev => {
           const newHistory = [...prev];
