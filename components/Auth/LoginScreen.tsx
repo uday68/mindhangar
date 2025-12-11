@@ -1,9 +1,18 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { useStore } from '../../store/useStore';
 import { Icons } from '../Icons';
+import { AuthProvider } from '../../types';
 
 export const LoginScreen: React.FC = () => {
   const { login, isLoadingAuth } = useStore();
+  const [activeProvider, setActiveProvider] = useState<AuthProvider | null>(null);
+
+  const handleLogin = async (provider: AuthProvider) => {
+    setActiveProvider(provider);
+    await login(provider);
+    setActiveProvider(null);
+  };
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black text-white">
@@ -29,11 +38,11 @@ export const LoginScreen: React.FC = () => {
 
           <div className="space-y-4">
             <button
-              onClick={() => login('google')}
+              onClick={() => handleLogin('google')}
               disabled={isLoadingAuth}
-              className="w-full flex items-center justify-center gap-3 bg-white text-slate-900 font-bold py-3.5 rounded-xl hover:bg-slate-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
+              className={`w-full flex items-center justify-center gap-3 bg-white text-slate-900 font-bold py-3.5 rounded-xl hover:bg-slate-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed group relative overflow-hidden ${activeProvider === 'google' ? 'cursor-wait' : ''}`}
             >
-              {isLoadingAuth ? (
+              {activeProvider === 'google' ? (
                 <div className="w-5 h-5 border-2 border-slate-900 border-t-transparent rounded-full animate-spin"></div>
               ) : (
                 <>
@@ -45,12 +54,18 @@ export const LoginScreen: React.FC = () => {
             </button>
 
             <button
-              onClick={() => login('github')}
+              onClick={() => handleLogin('github')}
               disabled={isLoadingAuth}
-              className="w-full flex items-center justify-center gap-3 bg-slate-800 text-white font-bold py-3.5 rounded-xl border border-slate-700 hover:bg-slate-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className={`w-full flex items-center justify-center gap-3 bg-slate-800 text-white font-bold py-3.5 rounded-xl border border-slate-700 hover:bg-slate-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${activeProvider === 'github' ? 'cursor-wait' : ''}`}
             >
-              <Icons.Github className="w-5 h-5" />
-              <span>Continue with GitHub</span>
+              {activeProvider === 'github' ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <>
+                  <Icons.Github className="w-5 h-5" />
+                  <span>Continue with GitHub</span>
+                </>
+              )}
             </button>
           </div>
 

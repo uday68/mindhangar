@@ -1,6 +1,8 @@
+
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { PanelType, PanelState, Note, UserStats, Notification, AppSettings, FocusSession, User, Page, Block, BlockType, LearnerProfile } from '../types';
+import { PanelType, PanelState, Note, UserStats, Notification, AppSettings, FocusSession, User, Page, Block, BlockType, LearnerProfile, AuthProvider } from '../types';
+import { authService } from '../services/authService';
 
 interface AppState {
   activePanels: Record<PanelType, PanelState>;
@@ -14,7 +16,7 @@ interface AppState {
   user: User | null;
   isLoadingAuth: boolean;
   showOnboarding: boolean;
-  login: (provider: 'google' | 'github') => Promise<void>;
+  login: (provider: AuthProvider) => Promise<void>;
   logout: () => void;
   completeOnboarding: (profile: LearnerProfile) => void;
 
@@ -144,26 +146,27 @@ export const useStore = create<AppState>()(
       
       login: async (provider) => {
         set({ isLoadingAuth: true });
-        // Simulate API Network Delay and "Dynamic" User Fetching
-        await new Promise(resolve => setTimeout(resolve, 1500));
         
-        set({
-          isLoadingAuth: false,
-          user: {
-            id: 'u_' + crypto.randomUUID().slice(0, 8),
-            name: 'Student User',
-            email: 'student@example.com',
-            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${Date.now()}`, // Dynamic Avatar based on login time
-            provider,
-            joinedAt: new Date()
-          },
-          showOnboarding: true, // Trigger onboarding for demo
-          // Open settings panel on first login or restore previous state
-          settings: { ...get().settings, username: 'Student User' }
-        });
+        try {
+          const user = await authService.login(provider);
+          
+          set({
+            isLoadingAuth: false,
+            user,
+            showOnboarding: true, // Trigger onboarding for demo
+            settings: { ...get().settings, username: user.name }
+          });
+        } catch (error) {
+          console.error("Login failed", error);
+          set({ isLoadingAuth: false });
+          alert("Login failed. Please try again.");
+        }
       },
       
-      logout: () => set({ user: null, showOnboarding: false, activePanels: createInitialPanels() }),
+      logout: async () => {
+        await authService.logout();
+        set({ user: null, showOnboarding: false, activePanels: createInitialPanels() });
+      },
 
       completeOnboarding: (profile) => set((state) => {
         if (!state.user) return state;

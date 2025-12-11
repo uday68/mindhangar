@@ -1,3 +1,4 @@
+
 export type PanelType = 'search' | 'video' | 'notes' | 'planner' | 'quiz' | 'focus' | 'chat' | 'notifications' | 'settings';
 
 export interface PanelState {
@@ -18,14 +19,18 @@ export interface LearnerProfile {
 }
 
 // Auth & User
+export type AuthProvider = 'google' | 'github' | 'email';
+
 export interface User {
   id: string;
   name: string;
   email: string;
   avatar: string;
-  provider: 'google' | 'github';
+  provider: AuthProvider;
   joinedAt: Date;
   profile?: LearnerProfile;
+  accessToken?: string;
+  refreshToken?: string;
 }
 
 // MongoDB-like Document Structure (Notion Clone)
