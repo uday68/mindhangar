@@ -53,7 +53,18 @@ const PanelTitleMap: Record<PanelType, string> = {
 };
 
 export const Workspace: React.FC = () => {
-  const { activePanels, togglePanel, updatePanelPosition, bringToFront, focusedPanel, isFocusMode, focusSession, tickSession } = useStore();
+  const { 
+    activePanels, 
+    togglePanel, 
+    updatePanelPosition, 
+    bringToFront, 
+    focusedPanel, 
+    isFocusMode, 
+    focusSession, 
+    tickSession,
+    maximizedPanel,
+    toggleMaximize 
+  } = useStore();
 
   // Global Timer Driver
   useEffect(() => {
@@ -89,8 +100,6 @@ export const Workspace: React.FC = () => {
       )}
 
       {(Object.entries(activePanels) as [string, PanelState][]).map(([key, panel]) => {
-        // In Focus Mode, only render the 'focus' panel and 'video' panel if permitted (we handle video restriction inside VideoPanel)
-        
         const type = key as PanelType;
 
         if (isFocusMode) {
@@ -105,21 +114,38 @@ export const Workspace: React.FC = () => {
         // Layout overrides for Focus Mode
         const isLocked = isFocusMode && type === 'focus';
         
-        // Focus panel centers in locked mode; Video follows previous user layout or can be dragged (VideoPanel has specific logic to hide/show)
-        // If locked, Focus panel is centered. Video stays where it was but might be restricted.
-        const position = isLocked ? { x: window.innerWidth / 2 - 200, y: window.innerHeight / 2 - 200 } : { x: panel.x, y: panel.y };
-        const size = isLocked ? { width: 400, height: 400 } : { width: panel.width, height: panel.height };
+        // Check Maximized State
+        const isMaximized = maximizedPanel === type;
+
+        // Determine Position & Size
+        let position = { x: panel.x, y: panel.y };
+        let size = { width: panel.width, height: panel.height };
+        
+        if (isLocked) {
+          position = { x: window.innerWidth / 2 - 200, y: window.innerHeight / 2 - 200 };
+          size = { width: 400, height: 400 };
+        } else if (isMaximized) {
+          position = { x: 0, y: 0 };
+          // We'll set size to 100% via Rnd props or styling, but Rnd expects explicit values for controlled mode.
+          // Using '100%' in style often works better for Rnd when maximizing.
+        }
+
+        const disableDrag = isLocked || isMaximized;
+        const disableResize = isLocked || isMaximized;
 
         return (
           <Rnd
             key={key}
-            size={size}
-            position={position}
-            disableDragging={isLocked}
-            enableResizing={!isLocked}
-            onDragStop={(e, d) => !isLocked && updatePanelPosition(type, { x: d.x, y: d.y })}
+            // If maximized, we use size 100% via style (handled by Rnd className usually, but explicit size works)
+            // For Rnd, setting size/position to undefined or specific values toggles control.
+            // We use explicit values here.
+            size={isMaximized ? { width: '100%', height: '100%' } : size}
+            position={isMaximized ? { x: 0, y: 0 } : position}
+            disableDragging={disableDrag}
+            enableResizing={disableResize}
+            onDragStop={(e, d) => !disableDrag && updatePanelPosition(type, { x: d.x, y: d.y })}
             onResizeStop={(e, direction, ref, delta, position) => {
-              !isLocked && updatePanelPosition(type, {
+              !disableDrag && updatePanelPosition(type, {
                 width: parseInt(ref.style.width),
                 height: parseInt(ref.style.height),
                 ...position,
@@ -127,20 +153,22 @@ export const Workspace: React.FC = () => {
             }}
             onMouseDown={() => !isLocked && bringToFront(type)}
             style={{ 
-              zIndex: isLocked ? 50 : panel.zIndex,
-              transition: isLocked ? 'all 0.5s ease-in-out' : 'none'
+              zIndex: isLocked ? 50 : (isMaximized ? 9999 : panel.zIndex),
+              transition: (isLocked || isMaximized) ? 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)' : 'none'
             }}
             bounds="parent"
             minWidth={320}
             minHeight={250}
-            dragHandleClassName={isLocked ? "" : "cursor-move"}
+            dragHandleClassName={disableDrag ? "" : "cursor-move"}
           >
             <GlassPanel
               title={PanelTitleMap[type]}
               icon={PanelIconMap[type]}
               onClose={() => !isLocked && togglePanel(type)}
-              isActive={focusedPanel === type || isLocked}
+              isActive={focusedPanel === type || isLocked || isMaximized}
               onMouseDown={() => !isLocked && bringToFront(type)}
+              onMaximize={!isLocked ? () => toggleMaximize(type) : undefined}
+              isMaximized={isMaximized}
             >
               <Content />
             </GlassPanel>

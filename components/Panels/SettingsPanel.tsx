@@ -6,6 +6,11 @@ import { Icons } from '../Icons';
 export const SettingsPanel: React.FC = () => {
   const { settings, updateSettings, userStats, resetLayout, user, toggleMarketingMode } = useStore();
   const [testStatus, setTestStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  
+  // Feedback State
+  const [rating, setRating] = useState(0);
+  const [feedback, setFeedback] = useState('');
+  const [feedbackSent, setFeedbackSent] = useState(false);
 
   const handleTestConnection = async () => {
     if (!settings.apiKey) return;
@@ -17,6 +22,17 @@ export const SettingsPanel: React.FC = () => {
     if (isWorking) {
         setTimeout(() => setTestStatus('idle'), 3000);
     }
+  };
+
+  const handleSubmitFeedback = () => {
+    if (rating === 0 && !feedback) return;
+    setFeedbackSent(true);
+    // In a real app, this would send data to a backend
+    setTimeout(() => {
+        setFeedbackSent(false);
+        setFeedback('');
+        setRating(0);
+    }, 3000);
   };
 
   return (
@@ -143,6 +159,51 @@ export const SettingsPanel: React.FC = () => {
           <button className="text-xs text-indigo-600 font-bold hover:underline">Connect</button>
         </div>
       </section>
+
+      {/* Feedback & Suggestions (New Commercial Section) */}
+      <section className="bg-gradient-to-br from-gray-50 to-indigo-50/50 p-4 rounded-xl border border-gray-100">
+        <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+            <Icons.MessageCircle size={14} /> Suggestions & Reviews
+        </h4>
+        {!feedbackSent ? (
+            <div className="space-y-3">
+            <div className="flex gap-2 justify-center py-2">
+                {[1,2,3,4,5].map(star => (
+                    <button 
+                        key={star} 
+                        onClick={() => setRating(star)} 
+                        className={`text-2xl transition-transform hover:scale-110 focus:outline-none ${rating >= star ? 'text-yellow-400 drop-shadow-sm' : 'text-gray-200 hover:text-yellow-200'}`}
+                        title={`${star} stars`}
+                    >
+                        ★
+                    </button>
+                ))}
+            </div>
+            <textarea 
+                className="w-full text-xs p-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-indigo-500 outline-none resize-none bg-white min-h-[80px]"
+                rows={3}
+                placeholder="Suggest a feature or leave a review..."
+                value={feedback}
+                onChange={e => setFeedback(e.target.value)}
+            />
+            <button 
+                onClick={handleSubmitFeedback}
+                disabled={!feedback && rating === 0}
+                className="w-full py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold shadow-md hover:bg-indigo-700 transition-colors disabled:opacity-50"
+            >
+                Submit Feedback
+            </button>
+            </div>
+        ) : (
+            <div className="text-center py-6 animate-in fade-in zoom-in">
+            <div className="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-2">
+                <Icons.Check size={20} />
+            </div>
+            <p className="text-sm font-bold text-gray-700">Feedback Sent!</p>
+            <p className="text-xs text-gray-500">Thank you for helping us improve.</p>
+            </div>
+        )}
+      </section>
       
       {/* Dev Tools */}
       <section className="border-t border-gray-100 pt-4">
@@ -156,8 +217,8 @@ export const SettingsPanel: React.FC = () => {
         <p className="text-[9px] text-gray-400 mt-1 text-center">Use this to generate screenshots for Kaggle/YouTube.</p>
       </section>
 
-      <div className="mt-auto text-center">
-        <p className="text-[10px] text-gray-400">MindHangar Enterprise v2.0 • Local Secure Storage</p>
+      <div className="mt-auto text-center pt-4">
+        <p className="text-[10px] text-gray-400">MindHangar Enterprise v2.1 • Local Secure Storage</p>
       </div>
     </div>
   );

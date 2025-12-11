@@ -9,6 +9,8 @@ interface GlassPanelProps {
   headerAction?: React.ReactNode;
   isActive?: boolean;
   onMouseDown?: () => void;
+  onMaximize?: () => void;
+  isMaximized?: boolean;
 }
 
 export const GlassPanel: React.FC<GlassPanelProps> = ({ 
@@ -18,11 +20,13 @@ export const GlassPanel: React.FC<GlassPanelProps> = ({
   children, 
   headerAction,
   isActive,
-  onMouseDown
+  onMouseDown,
+  onMaximize,
+  isMaximized
 }) => {
   return (
     <div 
-      className={`flex flex-col h-full w-full bg-white/80 backdrop-blur-xl border shadow-2xl rounded-2xl overflow-hidden transition-colors duration-200 ${isActive ? 'border-teal-500/50 shadow-teal-900/10' : 'border-white/40'}`}
+      className={`flex flex-col h-full w-full bg-white/80 backdrop-blur-xl border shadow-2xl rounded-2xl overflow-hidden transition-all duration-300 ${isActive ? 'border-teal-500/50 shadow-teal-900/10' : 'border-white/40'} ${isMaximized ? 'rounded-none border-0' : ''}`}
       onMouseDown={onMouseDown}
     >
       {/* Header - Draggable Handle */}
@@ -33,7 +37,23 @@ export const GlassPanel: React.FC<GlassPanelProps> = ({
         </div>
         <div className="flex items-center gap-1">
           {headerAction}
-          <button onClick={onClose} className="p-1 hover:bg-red-50 hover:text-red-500 rounded-md transition-colors">
+          
+          {onMaximize && (
+            <button 
+              onClick={(e) => { e.stopPropagation(); onMaximize(); }} 
+              onMouseDown={(e) => e.stopPropagation()}
+              className="p-1 hover:bg-gray-200 text-gray-400 hover:text-gray-700 rounded-md transition-colors"
+              title={isMaximized ? "Restore" : "Maximize"}
+            >
+              {isMaximized ? <Icons.Minimize size={16} /> : <Icons.Maximize size={16} />}
+            </button>
+          )}
+
+          <button 
+            onClick={(e) => { e.stopPropagation(); onClose(); }} 
+            onMouseDown={(e) => e.stopPropagation()}
+            className="p-1 hover:bg-red-50 hover:text-red-500 text-gray-400 rounded-md transition-colors"
+          >
             <Icons.X size={16} />
           </button>
         </div>

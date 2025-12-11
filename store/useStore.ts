@@ -11,6 +11,10 @@ interface AppState {
   bringToFront: (type: PanelType) => void;
   resetLayout: (presetName: string) => void;
   
+  // Window Management
+  maximizedPanel: PanelType | null;
+  toggleMaximize: (type: PanelType) => void;
+
   // Auth
   user: User | null;
   isLoadingAuth: boolean;
@@ -155,6 +159,7 @@ export const useStore = create<AppState>()(
     (set, get) => ({
       activePanels: createInitialPanels(),
       focusedPanel: 'planner',
+      maximizedPanel: null,
       
       // Auth
       user: null, // Start unauthenticated
@@ -183,7 +188,7 @@ export const useStore = create<AppState>()(
       
       logout: async () => {
         await authService.logout();
-        set({ user: null, showOnboarding: false, activePanels: createInitialPanels() });
+        set({ user: null, showOnboarding: false, activePanels: createInitialPanels(), maximizedPanel: null });
       },
 
       completeOnboarding: (profile) => set((state) => {
@@ -349,11 +354,27 @@ export const useStore = create<AppState>()(
       togglePanel: (type) => set((state) => {
         if (state.isFocusMode && type !== 'focus') return state;
         const panel = state.activePanels[type];
+        // If closing a panel that was maximized, clear maximized state
+        const wasMaximized = state.maximizedPanel === type;
+        
         return {
           activePanels: { ...state.activePanels, [type]: { ...panel, isOpen: !panel.isOpen, zIndex: ++maxZ } },
-          focusedPanel: !panel.isOpen ? type : state.focusedPanel
+          focusedPanel: !panel.isOpen ? type : state.focusedPanel,
+          maximizedPanel: wasMaximized ? null : state.maximizedPanel
         };
       }),
+      
+      toggleMaximize: (type) => set((state) => ({
+        maximizedPanel: state.maximizedPanel === type ? null : type,
+        focusedPanel: type,
+        activePanels: {
+           ...state.activePanels,
+           [type]: {
+             ...state.activePanels[type],
+             zIndex: state.maximizedPanel === type ? state.activePanels[type].zIndex : ++maxZ 
+           }
+        }
+      })),
 
       updatePanelPosition: (type, data) => set((state) => ({
         activePanels: { ...state.activePanels, [type]: { ...state.activePanels[type], ...data } }
@@ -374,12 +395,13 @@ export const useStore = create<AppState>()(
           const isOpen = k === 'settings' ? true : def.isOpen;
           newPanels[k] = { ...def, isOpen, zIndex: k === 'settings' ? 200 : ++maxZ };
         });
-        return { activePanels: newPanels };
+        return { activePanels: newPanels, maximizedPanel: null };
       }),
 
-      setFocusMode: (active) => set(() => ({ isFocusMode: active })),
+      setFocusMode: (active) => set(() => ({ isFocusMode: active, maximizedPanel: null })),
       startSession: (mode, durationSeconds) => set(() => ({
-        focusSession: { isActive: true, mode, timeLeft: durationSeconds, totalTime: durationSeconds }
+        focusSession: { isActive: true, mode, timeLeft: durationSeconds, totalTime: durationSeconds },
+        maximizedPanel: null
       })),
       stopSession: () => set((state) => ({
         focusSession: { ...state.focusSession, isActive: false },
