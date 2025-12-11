@@ -74,6 +74,16 @@ Built with **React**, **TypeScript**, and **Google Gemini API**, it leverages La
     *   **Visual Tracking:** Optional camera integration simulates attention tracking (privacy-focused, local only).
     *   **Lock Mode:** UI restrictions during deep work to prevent opening unrelated panels.
 
+### 7. Mobile Companion Pairing
+**Concept:** Second-screen experience for distraction blocking and notifications.
+
+![Mobile Pairing](https://placehold.co/800x400/f1f5f9/334155?text=QR+Code+Mobile+Pairing&font=roboto)
+*Above: The Onboarding Scanner. Users scan a secure QR code to pair their mobile device. This connection enables the desktop app to silence phone notifications during deep focus sessions.*
+
+*   **Implementation:**
+    *   **QR Scanner:** Uses `react-qr-reader` for in-browser camera access.
+    *   **Context Awareness:** Syncs "Focus State" between desktop and mobile profiles.
+
 ---
 
 ## 🛠️ Technical Stack
