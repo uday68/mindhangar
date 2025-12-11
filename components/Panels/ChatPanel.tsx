@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createChatSession } from '../../services/geminiService';
+import { useStore } from '../../store/useStore';
 import { Icons } from '../Icons';
 
 export const ChatPanel: React.FC = () => {
+  const { settings } = useStore();
   const [messages, setMessages] = useState<{role: 'user' | 'model', text: string}[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -12,10 +14,18 @@ export const ChatPanel: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    chatSessionRef.current = createChatSession();
-    // Initial Greeting
-    setMessages([{ role: 'model', text: "Hi! I'm your AI study assistant. How can I help you focus today?" }]);
-  }, []);
+    if (settings.apiKey) {
+      const session = createChatSession(settings.apiKey);
+      if (session) {
+        chatSessionRef.current = session;
+        setMessages([{ role: 'model', text: "Hi! I'm your AI study assistant. How can I help you focus today?" }]);
+      } else {
+        setMessages([{ role: 'model', text: "Please configure your API Key in Settings to start chatting." }]);
+      }
+    } else {
+      setMessages([{ role: 'model', text: "Please configure your API Key in Settings to start chatting." }]);
+    }
+  }, [settings.apiKey]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -27,15 +37,12 @@ export const ChatPanel: React.FC = () => {
 
   const speakText = (text: string) => {
     if ('speechSynthesis' in window) {
-      // Cancel any ongoing speech
       window.speechSynthesis.cancel();
-      
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.rate = 1;
       utterance.pitch = 1;
       utterance.onstart = () => setIsSpeaking(true);
       utterance.onend = () => setIsSpeaking(false);
-      
       window.speechSynthesis.speak(utterance);
     }
   };
@@ -49,7 +56,12 @@ export const ChatPanel: React.FC = () => {
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || !chatSessionRef.current) return;
+    if (!input.trim()) return;
+
+    if (!chatSessionRef.current) {
+       alert("Chat session not initialized. Check your API Key.");
+       return;
+    }
 
     const userMsg = input;
     setInput('');
@@ -72,14 +84,8 @@ export const ChatPanel: React.FC = () => {
         });
       }
       
-      // Auto-read response if simple enough
-      if (fullText.length < 200) {
-        // Optional: auto-speak short responses
-        // speakText(fullText);
-      }
-
     } catch (err) {
-      setMessages(prev => [...prev, { role: 'model', text: "Sorry, I encountered an error. Please try again." }]);
+      setMessages(prev => [...prev, { role: 'model', text: "Sorry, I encountered an error. Please check your API Key and connection." }]);
     } finally {
       setLoading(false);
     }
@@ -99,18 +105,13 @@ export const ChatPanel: React.FC = () => {
             >
               {msg.text}
               
-              {/* Speak Button for AI messages */}
               {msg.role === 'model' && (
                 <button 
                   onClick={() => speakText(msg.text)}
                   className="absolute -right-8 top-1 opacity-0 group-hover:opacity-100 text-gray-400 hover:text-indigo-600 transition-all p-1"
                   title="Read aloud"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
-                  </svg>
+                  <Icons.Video size={16} /> {/* Using Video icon as placeholder for Speaker since we don't have Speaker icon */}
                 </button>
               )}
             </div>
@@ -148,12 +149,12 @@ export const ChatPanel: React.FC = () => {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           disabled={loading}
-          placeholder="Type a message..."
-          className="w-full bg-white border border-gray-200 pl-4 pr-12 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 shadow-sm disabled:opacity-50"
+          placeholder={settings.apiKey ? "Type a message..." : "Enter API Key in Settings"}
+          className="w-full bg-white border border-gray-200 pl-4 pr-12 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 shadow-sm disabled:opacity-50 disabled:bg-gray-100"
         />
         <button 
           type="submit"
-          disabled={!input.trim() || loading}
+          disabled={!input.trim() || loading || !settings.apiKey}
           className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-50 disabled:bg-gray-300"
         >
           <Icons.Check size={16} />

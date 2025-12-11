@@ -10,6 +10,13 @@ export interface PanelState {
   zIndex: number;
 }
 
+export interface LearnerProfile {
+  academicLevel: string;
+  major: string;
+  keyGoals: string[];
+  mobilePaired: boolean;
+}
+
 // Auth & User
 export interface User {
   id: string;
@@ -18,6 +25,7 @@ export interface User {
   avatar: string;
   provider: 'google' | 'github';
   joinedAt: Date;
+  profile?: LearnerProfile;
 }
 
 // MongoDB-like Document Structure (Notion Clone)

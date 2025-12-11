@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { generateQuizQuestions, generateFlashcards } from '../../services/geminiService';
+import { generateQuizQuestions, generateFlashcards, generatePerformanceReview } from '../../services/geminiService';
 import { QuizQuestion, Flashcard } from '../../types';
 import { useStore } from '../../store/useStore';
 import { Icons } from '../Icons';
 
 export const QuizPanel: React.FC = () => {
-  const { addXp } = useStore();
+  const { addXp, settings } = useStore();
   const [activeTab, setActiveTab] = useState<'quiz' | 'flashcards'>('quiz');
   
   // Quiz State
@@ -16,6 +16,17 @@ export const QuizPanel: React.FC = () => {
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [showResults, setShowResults] = useState(false);
 
+  // Reflection / Coaching State
+  const [reflectionConfidence, setReflectionConfidence] = useState(5);
+  const [reflectionText, setReflectionText] = useState('');
+  const [coachingLoading, setCoachingLoading] = useState(false);
+  const [coachingResult, setCoachingResult] = useState<{
+    diagnosis: string;
+    technique: string;
+    technique_description: string;
+    action_plan: string[];
+  } | null>(null);
+
   // Flashcard State
   const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
   const [flashcardLoading, setFlashcardLoading] = useState(false);
@@ -23,25 +34,28 @@ export const QuizPanel: React.FC = () => {
   const [isFlipped, setIsFlipped] = useState(false);
 
   const handleGenerateQuiz = async () => {
-    if (!topic) return;
+    if (!topic || !settings.apiKey) return;
     setQuizLoading(true);
     setQuestions([]);
     setAnswers({});
     setShowResults(false);
+    setCoachingResult(null); // Reset previous coaching
+    setReflectionText('');
+    setReflectionConfidence(5);
     
-    const qs = await generateQuizQuestions(topic, difficulty);
+    const qs = await generateQuizQuestions(settings.apiKey, topic, difficulty);
     setQuestions(qs);
     setQuizLoading(false);
   };
 
   const handleGenerateFlashcards = async () => {
-    if (!topic) return;
+    if (!topic || !settings.apiKey) return;
     setFlashcardLoading(true);
     setFlashcards([]);
     setCurrentCardIndex(0);
     setIsFlipped(false);
 
-    const cards = await generateFlashcards(topic);
+    const cards = await generateFlashcards(settings.apiKey, topic);
     setFlashcards(cards);
     setFlashcardLoading(false);
   };
@@ -69,6 +83,18 @@ export const QuizPanel: React.FC = () => {
     return score;
   };
 
+  const handleGetCoaching = async () => {
+    if (!reflectionText || !settings.apiKey) return;
+    setCoachingLoading(true);
+    const result = await generatePerformanceReview(settings.apiKey, {
+      topic: topic,
+      confidence: reflectionConfidence,
+      confusion: reflectionText
+    });
+    setCoachingResult(result);
+    setCoachingLoading(false);
+  };
+
   // Shared Header
   const Header = () => (
     <div className="flex items-center justify-center gap-1 bg-gray-100 p-1 rounded-lg mb-4">
@@ -86,6 +112,16 @@ export const QuizPanel: React.FC = () => {
       </button>
     </div>
   );
+
+  if (!settings.apiKey) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full text-center p-4">
+        <Icons.Settings className="text-gray-400 mb-2" size={32} />
+        <h3 className="font-bold text-gray-700">API Key Required</h3>
+        <p className="text-xs text-gray-500 mb-4">Please configure your Gemini API Key in Settings to generate quizzes.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full">
@@ -170,10 +206,77 @@ export const QuizPanel: React.FC = () => {
                   Submit Answers
                 </button>
               ) : (
-                <div className="text-center p-4 bg-teal-50 rounded-xl border border-teal-100">
-                  <span className="text-teal-900 font-bold text-lg">Score: {calculateScore()} / {questions.length}</span>
-                  <p className="text-xs text-teal-600 mt-1">+{(calculateScore() * 10)} XP Earned!</p>
-                  <button onClick={() => setQuestions([])} className="block w-full mt-2 text-xs text-teal-600 underline">Try Another</button>
+                <div className="space-y-6 pb-6">
+                  {/* Score Card */}
+                  <div className="text-center p-4 bg-teal-50 rounded-xl border border-teal-100">
+                    <span className="text-teal-900 font-bold text-lg">Score: {calculateScore()} / {questions.length}</span>
+                    <p className="text-xs text-teal-600 mt-1">+{(calculateScore() * 10)} XP Earned!</p>
+                  </div>
+
+                  {/* Reflection & AI Coaching Section */}
+                  <div className="bg-indigo-50/50 rounded-2xl p-4 border border-indigo-100">
+                    <h4 className="font-bold text-indigo-900 flex items-center gap-2 mb-3">
+                      <Icons.Brain size={18} /> AI Coach Reflection
+                    </h4>
+                    
+                    {!coachingResult ? (
+                      <div className="space-y-3">
+                        <p className="text-xs text-indigo-700 leading-relaxed">
+                          Take a second to reflect. Identifying what confused you is the fastest way to learn.
+                        </p>
+                        
+                        <div>
+                          <label className="text-xs font-bold text-indigo-400 uppercase">Confidence Level</label>
+                          <div className="flex items-center gap-3">
+                             <input 
+                               type="range" min="1" max="10" 
+                               value={reflectionConfidence} 
+                               onChange={(e) => setReflectionConfidence(parseInt(e.target.value))}
+                               className="flex-1 accent-indigo-600 h-1.5 bg-indigo-200 rounded-lg appearance-none cursor-pointer"
+                             />
+                             <span className="text-xs font-bold text-indigo-700 w-6">{reflectionConfidence}</span>
+                          </div>
+                        </div>
+
+                        <div>
+                           <label className="text-xs font-bold text-indigo-400 uppercase">What was confusing?</label>
+                           <textarea
+                             value={reflectionText}
+                             onChange={(e) => setReflectionText(e.target.value)}
+                             placeholder="e.g. I guessed on question 2 because I forgot..."
+                             className="w-full mt-1 p-2 rounded-lg border border-indigo-100 text-sm h-20 resize-none focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
+                           />
+                        </div>
+
+                        <button 
+                          onClick={handleGetCoaching}
+                          disabled={coachingLoading || !reflectionText}
+                          className="w-full bg-indigo-600 text-white py-2.5 rounded-xl font-bold text-sm shadow-md hover:bg-indigo-700 transition-colors disabled:opacity-50 flex justify-center items-center gap-2"
+                        >
+                          {coachingLoading ? <div className="animate-spin h-4 w-4 border-2 border-white/50 border-t-white rounded-full"/> : "Get Coaching"}
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                         {/* Diagnosis */}
+                         <div className="bg-white p-3 rounded-lg border border-indigo-50 shadow-sm">
+                            <span className="text-[10px] font-bold text-gray-400 uppercase">Analysis</span>
+                            <p className="text-sm text-gray-800 font-medium leading-relaxed mt-1">{coachingResult.diagnosis}</p>
+                         </div>
+                         
+                         {/* Strategy */}
+                         <div className="bg-teal-50 p-3 rounded-lg border border-teal-100">
+                            <span className="text-[10px] font-bold text-teal-600 uppercase">Try This Strategy</span>
+                            <h5 className="font-bold text-teal-800 text-sm mt-0.5">{coachingResult.technique}</h5>
+                            <p className="text-xs text-teal-700 mt-1 leading-relaxed">{coachingResult.technique_description}</p>
+                         </div>
+
+                         <div className="pt-2">
+                           <button onClick={() => setQuestions([])} className="w-full text-xs text-gray-400 hover:text-gray-600 underline">Close Quiz</button>
+                         </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>

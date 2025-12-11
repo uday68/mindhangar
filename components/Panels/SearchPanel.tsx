@@ -10,16 +10,15 @@ export const SearchPanel: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   
-  // Use store to "Save" content
-  const { addNote } = useStore();
+  const { addNote, settings } = useStore();
 
   const handleSearch = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!query.trim()) return;
+    if (!query.trim() || !settings.apiKey) return;
     
     setLoading(true);
     setHasSearched(true);
-    const data = await performSemanticSearch(query);
+    const data = await performSemanticSearch(settings.apiKey, query);
     setResults(data);
     setLoading(false);
   };
@@ -29,6 +28,16 @@ export const SearchPanel: React.FC = () => {
     if (score >= 70) return 'bg-blue-100 text-blue-800 border-blue-200';
     return 'bg-orange-100 text-orange-800 border-orange-200';
   };
+
+  if (!settings.apiKey) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full text-center p-4">
+        <Icons.Settings className="text-gray-400 mb-2" size={32} />
+        <h3 className="font-bold text-gray-700">API Key Required</h3>
+        <p className="text-xs text-gray-500 mb-4">Please configure your Gemini API Key in Settings to use Smart Search.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full gap-4">

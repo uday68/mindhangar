@@ -4,7 +4,7 @@ import { useStore } from '../../store/useStore';
 import { Icons } from '../Icons';
 
 export const VideoPanel: React.FC = () => {
-  const { focusSession } = useStore();
+  const { focusSession, settings } = useStore();
   const [activeTab, setActiveTab] = useState<'transcript' | 'summary'>('transcript');
   const [videoUrl, setVideoUrl] = useState('');
   const [embedId, setEmbedId] = useState('');
@@ -62,9 +62,13 @@ export const VideoPanel: React.FC = () => {
 
   const handleSummarize = async () => {
     if (!transcriptText.trim()) return;
+    if (!settings.apiKey) {
+      alert("Please set your API Key in Settings to use AI Summarization.");
+      return;
+    }
     setLoading(true);
     setActiveTab('summary');
-    const result = await summarizeContent(transcriptText);
+    const result = await summarizeContent(settings.apiKey, transcriptText);
     setSummary(result);
     setLoading(false);
   };

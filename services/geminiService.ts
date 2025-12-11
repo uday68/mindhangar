@@ -1,37 +1,40 @@
-import { GoogleGenAI, Type, Schema } from "@google/genai";
+import { GoogleGenAI, Type } from "@google/genai";
 
-// Accessing the API key securely from environment variables
-const apiKey = process.env.API_KEY || ""; 
+// Enterprise-Grade Service Factory
+// We no longer instantiate a global `ai` object. 
+// Instead, we use a helper to create the client on-demand with the user's latest key.
 
-const ai = new GoogleGenAI({ apiKey });
+const getClient = (apiKey: string) => {
+  if (!apiKey) throw new Error("API Key is missing. Please configure it in Settings.");
+  return new GoogleGenAI({ apiKey });
+};
 
-export const generatePlanSuggestion = async (goals: string[]) => {
-  if (!apiKey) return "API Key missing. Cannot generate plan.";
-  
+export const generatePlanSuggestion = async (apiKey: string, goals: string[]) => {
   try {
-    const prompt = `Create a concise 3-day study schedule for the following goals: ${goals.join(", ")}. Return as a markdown list.`;
+    const ai = getClient(apiKey);
+    const prompt = `Create a concise, high-performance 3-day study schedule for the following academic goals: ${goals.join(", ")}. 
+    Format as a markdown list. Prioritize deep work sessions and active recall intervals.`;
     
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: prompt,
       config: {
-        systemInstruction: "You are an expert academic coach. Be specific and time-bound.",
+        systemInstruction: "You are an elite academic performance coach. Be specific, time-bound, and encouraging.",
         temperature: 0.7
       }
     });
 
     return response.text;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Gemini Plan Error:", error);
-    return "Failed to generate plan. Please try again.";
+    return `Error: ${error.message || "Failed to generate plan."}`;
   }
 };
 
-export const generateQuizQuestions = async (topic: string, difficulty: 'easy' | 'medium' | 'hard') => {
-  if (!apiKey) return [];
-
+export const generateQuizQuestions = async (apiKey: string, topic: string, difficulty: 'easy' | 'medium' | 'hard') => {
   try {
-    const prompt = `Generate 3 ${difficulty} multiple choice questions about "${topic}".`;
+    const ai = getClient(apiKey);
+    const prompt = `Generate 3 ${difficulty} multiple choice questions about "${topic}". Ensure distractor options are plausible to test true understanding.`;
     
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
@@ -61,11 +64,12 @@ export const generateQuizQuestions = async (topic: string, difficulty: 'easy' | 
   }
 };
 
-export const generateFlashcards = async (topic: string, count: number = 5) => {
-  if (!apiKey) return [];
-
+export const generateFlashcards = async (apiKey: string, topic: string, count: number = 5) => {
   try {
-    const prompt = `Generate ${count} study flashcards about "${topic}". Return valid JSON array with 'front' and 'back' properties for each card. Keep them concise.`;
+    const ai = getClient(apiKey);
+    const prompt = `Generate ${count} study flashcards about "${topic}". 
+    Return valid JSON array with 'front' and 'back' properties. 
+    Front should be a concept or question. Back should be a concise, high-yield explanation.`;
     
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
@@ -94,12 +98,16 @@ export const generateFlashcards = async (topic: string, count: number = 5) => {
   }
 };
 
-export const performSemanticSearch = async (query: string) => {
-  if (!apiKey) return [];
-  
+export const performSemanticSearch = async (apiKey: string, query: string) => {
   try {
-    const prompt = `Provide 3 distinct, high-quality, and factual search results or key concept summaries for the query: "${query}". 
-    For 'source', cite a reputable real-world source (e.g., documentation, book, or authority website). 
+    const ai = getClient(apiKey);
+    // In a real enterprise app, we might use the `googleSearch` tool here if available to the model.
+    // For now, we simulate "Semantic Search" by asking the LLM to hallucinate high-quality resources 
+    // OR we could actually use the Grounding tool if the model supports it.
+    // Let's use the standard generation but ask for structured data that mimics a search engine.
+    
+    const prompt = `Provide 3 distinct, high-quality, and factual learning resources or key concept summaries for the query: "${query}". 
+    For 'source', cite a reputable real-world source (e.g., documentation, book, university website). 
     For 'url', provide a real or plausible URL structure.`;
 
     const response = await ai.models.generateContent({
@@ -133,28 +141,33 @@ export const performSemanticSearch = async (query: string) => {
   }
 };
 
-export const summarizeContent = async (text: string) => {
-  if (!apiKey) return "API Key missing.";
+export const summarizeContent = async (apiKey: string, text: string) => {
   try {
+    const ai = getClient(apiKey);
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
-      contents: `Summarize the following text into key bullet points and a brief conclusion:\n\n${text}`,
+      contents: `Summarize the following text into key bullet points and a brief conclusion. Focus on actionable insights:\n\n${text}`,
     });
     return response.text || "Could not generate summary.";
   } catch (error) {
     console.error("Summarization Error:", error);
-    return "Error during summarization.";
+    return "Error during summarization. Please check your API key.";
   }
 };
 
-export const createChatSession = () => {
-  if (!apiKey) return null;
-  return ai.chats.create({
-    model: 'gemini-2.5-flash',
-    config: {
-      systemInstruction: "You are a helpful, encouraging student assistant.",
-    }
-  });
+export const createChatSession = (apiKey: string) => {
+  try {
+    const ai = getClient(apiKey);
+    return ai.chats.create({
+      model: 'gemini-2.5-flash',
+      config: {
+        systemInstruction: "You are a helpful, encouraging student assistant. Keep answers concise and academic.",
+      }
+    });
+  } catch (error) {
+    console.error("Chat Creation Error:", error);
+    return null;
+  }
 };
 
 export interface ReviewData {
@@ -163,10 +176,9 @@ export interface ReviewData {
   confusion: string;
 }
 
-export const generatePerformanceReview = async (data: ReviewData) => {
-  if (!apiKey) return null;
-  
+export const generatePerformanceReview = async (apiKey: string, data: ReviewData) => {
   try {
+    const ai = getClient(apiKey);
     const prompt = `
       Analyze this Student Reflection to provide strategic improvements:
       Topic: "${data.topic}"
@@ -174,9 +186,9 @@ export const generatePerformanceReview = async (data: ReviewData) => {
       Specific Struggles: "${data.confusion}"
 
       Act as an elite academic performance coach using best practices (Active Recall, Spaced Repetition, Pareto Principle).
-      1. Diagnose the root cognitive blocker (e.g., Conceptual Gap, Lack of Application, Memory Decay).
-      2. Recommend ONE specific high-yield technique to fix this (e.g., Feynman Technique, Interleaving, Dual Coding).
-      3. Create a concrete, 3-step action plan to master this concept by next week.
+      1. Diagnose the root cognitive blocker.
+      2. Recommend ONE specific high-yield technique.
+      3. Create a concrete, 3-step action plan.
     `;
     
     const response = await ai.models.generateContent({
@@ -187,13 +199,12 @@ export const generatePerformanceReview = async (data: ReviewData) => {
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            diagnosis: { type: Type.STRING, description: "The identified root cause of the struggle" },
-            technique: { type: Type.STRING, description: "Name of the learning strategy" },
-            technique_description: { type: Type.STRING, description: "Brief explanation of how to apply the technique" },
+            diagnosis: { type: Type.STRING },
+            technique: { type: Type.STRING },
+            technique_description: { type: Type.STRING },
             action_plan: { 
               type: Type.ARRAY, 
-              items: { type: Type.STRING },
-              description: "3 steps to improve" 
+              items: { type: Type.STRING }
             }
           }
         }
@@ -210,25 +221,20 @@ export const generatePerformanceReview = async (data: ReviewData) => {
 };
 
 export const generateLearningRoadmap = async (
+  apiKey: string,
   goal: string,
   currentLevel: string,
   timeCommitment: string
 ) => {
-  if (!apiKey) return null;
-
   try {
+    const ai = getClient(apiKey);
     const prompt = `
       Create a structured learning roadmap for a student with the following profile:
       - Goal: ${goal}
       - Current Knowledge Level: ${currentLevel}
       - Time Availability: ${timeCommitment}
 
-      Break this down into logical chronological modules (e.g., Week 1, Month 1, etc. depending on timeframe).
-      For each module, provide:
-      1. A clear title and brief description.
-      2. Key topics to master.
-      3. 2-3 specific recommended search terms or titles for free high-quality resources (videos, docs, articles).
-
+      Break this down into logical chronological modules.
       Return strictly valid JSON.
     `;
 
@@ -247,7 +253,7 @@ export const generateLearningRoadmap = async (
               items: {
                 type: Type.OBJECT,
                 properties: {
-                  week: { type: Type.STRING, description: "Timeframe e.g., 'Week 1'" },
+                  week: { type: Type.STRING },
                   title: { type: Type.STRING },
                   description: { type: Type.STRING },
                   topics: { type: Type.ARRAY, items: { type: Type.STRING } },

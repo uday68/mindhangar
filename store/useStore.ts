@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { PanelType, PanelState, Note, UserStats, Notification, AppSettings, FocusSession, User, Page, Block, BlockType } from '../types';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { PanelType, PanelState, Note, UserStats, Notification, AppSettings, FocusSession, User, Page, Block, BlockType, LearnerProfile } from '../types';
 
 interface AppState {
   activePanels: Record<PanelType, PanelState>;
@@ -12,8 +13,10 @@ interface AppState {
   // Auth
   user: User | null;
   isLoadingAuth: boolean;
+  showOnboarding: boolean;
   login: (provider: 'google' | 'github') => Promise<void>;
   logout: () => void;
+  completeOnboarding: (profile: LearnerProfile) => void;
 
   // MongoDB-like Store (Normalized)
   pages: Record<string, Page>;
@@ -128,225 +131,250 @@ const createInitialPanels = () => {
   return panels;
 };
 
-export const useStore = create<AppState>((set, get) => ({
-  activePanels: createInitialPanels(),
-  focusedPanel: 'planner',
-  
-  // Auth
-  user: null, // Start unauthenticated
-  isLoadingAuth: false,
-  login: async (provider) => {
-    set({ isLoadingAuth: true });
-    // Simulate API Network Delay and "Dynamic" User Fetching
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    set({
+export const useStore = create<AppState>()(
+  persist(
+    (set, get) => ({
+      activePanels: createInitialPanels(),
+      focusedPanel: 'planner',
+      
+      // Auth
+      user: null, // Start unauthenticated
       isLoadingAuth: false,
-      user: {
-        id: 'u_' + crypto.randomUUID().slice(0, 8),
-        name: 'Student User',
-        email: 'student@example.com',
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${Date.now()}`, // Dynamic Avatar based on login time
-        provider,
-        joinedAt: new Date()
+      showOnboarding: false,
+      
+      login: async (provider) => {
+        set({ isLoadingAuth: true });
+        // Simulate API Network Delay and "Dynamic" User Fetching
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        set({
+          isLoadingAuth: false,
+          user: {
+            id: 'u_' + crypto.randomUUID().slice(0, 8),
+            name: 'Student User',
+            email: 'student@example.com',
+            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${Date.now()}`, // Dynamic Avatar based on login time
+            provider,
+            joinedAt: new Date()
+          },
+          showOnboarding: true, // Trigger onboarding for demo
+          // Open settings panel on first login or restore previous state
+          settings: { ...get().settings, username: 'Student User' }
+        });
       },
-      // Open settings panel on first login or restore previous state
-      settings: { ...get().settings, username: 'Student User' }
-    });
-  },
-  logout: () => set({ user: null }),
+      
+      logout: () => set({ user: null, showOnboarding: false, activePanels: createInitialPanels() }),
 
-  // Notion-like Store - Starts Empty (Dynamic)
-  pages: {},
-  blocks: {},
-  activePageId: null,
+      completeOnboarding: (profile) => set((state) => {
+        if (!state.user) return state;
+        return {
+          user: { ...state.user, profile },
+          showOnboarding: false
+        };
+      }),
 
-  createPage: (parentId) => set((state) => {
-    const id = crypto.randomUUID();
-    const blockId = crypto.randomUUID();
-    return {
-      pages: {
-        ...state.pages,
-        [id]: {
-          id,
-          title: 'Untitled Page',
-          icon: '📄',
-          blockIds: [blockId],
-          parentId,
-          createdAt: new Date(),
-          updatedAt: new Date(),
+      // Notion-like Store - Starts Empty (Dynamic)
+      pages: {},
+      blocks: {},
+      activePageId: null,
+
+      createPage: (parentId) => set((state) => {
+        const id = crypto.randomUUID();
+        const blockId = crypto.randomUUID();
+        return {
+          pages: {
+            ...state.pages,
+            [id]: {
+              id,
+              title: 'Untitled Page',
+              icon: '📄',
+              blockIds: [blockId],
+              parentId,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            }
+          },
+          blocks: {
+            ...state.blocks,
+            [blockId]: { id: blockId, type: 'text', content: '' }
+          },
+          activePageId: id
+        };
+      }),
+
+      setActivePage: (id) => set({ activePageId: id }),
+
+      updatePageTitle: (id, title) => set((state) => ({
+        pages: {
+          ...state.pages,
+          [id]: { ...state.pages[id], title, updatedAt: new Date() }
+        }
+      })),
+
+      deletePage: (id) => set((state) => {
+        const newPages = { ...state.pages };
+        delete newPages[id];
+        return { 
+          pages: newPages,
+          activePageId: state.activePageId === id ? Object.keys(newPages)[0] || null : state.activePageId 
+        };
+      }),
+
+      addBlock: (pageId, type, content = '', afterBlockId) => set((state) => {
+        const id = crypto.randomUUID();
+        const newBlock: Block = { id, type, content };
+        const page = state.pages[pageId];
+        if (!page) return state;
+
+        const newBlockIds = [...page.blockIds];
+        if (afterBlockId) {
+          const idx = newBlockIds.indexOf(afterBlockId);
+          if (idx !== -1) newBlockIds.splice(idx + 1, 0, id);
+          else newBlockIds.push(id);
+        } else {
+          newBlockIds.push(id);
+        }
+
+        return {
+          blocks: { ...state.blocks, [id]: newBlock },
+          pages: {
+            ...state.pages,
+            [pageId]: { ...page, blockIds: newBlockIds, updatedAt: new Date() }
+          }
+        };
+      }),
+
+      updateBlock: (blockId, content, properties) => set((state) => ({
+        blocks: {
+          ...state.blocks,
+          [blockId]: { 
+            ...state.blocks[blockId], 
+            content, 
+            properties: { ...state.blocks[blockId].properties, ...properties } 
+          }
+        }
+      })),
+
+      deleteBlock: (pageId, blockId) => set((state) => {
+        const page = state.pages[pageId];
+        if (!page) return state;
+        const newBlockIds = page.blockIds.filter(id => id !== blockId);
+        
+        const newBlocks = { ...state.blocks };
+        delete newBlocks[blockId];
+
+        return {
+          blocks: newBlocks,
+          pages: {
+            ...state.pages,
+            [pageId]: { ...page, blockIds: newBlockIds, updatedAt: new Date() }
+          }
+        };
+      }),
+
+      // Legacy Notes
+      notes: [],
+      addNote: () => {}, 
+      updateNote: () => {}, 
+      deleteNote: () => {},
+
+      isFocusMode: false,
+      userStats: { xp: 120, level: 2, streak: 3 },
+      notifications: [
+        { id: '1', type: 'info', title: 'Welcome', message: 'Get started by setting a goal in the Planner.', timestamp: new Date(), read: false }
+      ],
+      settings: {
+        apiKey: process.env.API_KEY || '',
+        username: 'Student',
+        enableCamera: true,
+        theme: 'light'
+      },
+      focusSession: {
+        isActive: false,
+        mode: 'focus',
+        timeLeft: 25 * 60,
+        totalTime: 25 * 60
+      },
+
+      togglePanel: (type) => set((state) => {
+        if (state.isFocusMode && type !== 'focus') return state;
+        const panel = state.activePanels[type];
+        return {
+          activePanels: { ...state.activePanels, [type]: { ...panel, isOpen: !panel.isOpen, zIndex: ++maxZ } },
+          focusedPanel: !panel.isOpen ? type : state.focusedPanel
+        };
+      }),
+
+      updatePanelPosition: (type, data) => set((state) => ({
+        activePanels: { ...state.activePanels, [type]: { ...state.activePanels[type], ...data } }
+      })),
+
+      bringToFront: (type) => set((state) => ({
+        activePanels: { ...state.activePanels, [type]: { ...state.activePanels[type], zIndex: ++maxZ } },
+        focusedPanel: type
+      })),
+
+      resetLayout: (presetName) => set((state) => {
+        const preset = LAYOUT_PRESETS[presetName] || LAYOUT_PRESETS['Studio'];
+        const newPanels: any = {};
+        maxZ = 100;
+        Object.keys(preset.panels).forEach(key => {
+          const k = key as PanelType;
+          const def = preset.panels[k];
+          const isOpen = k === 'settings' ? true : def.isOpen;
+          newPanels[k] = { ...def, isOpen, zIndex: k === 'settings' ? 200 : ++maxZ };
+        });
+        return { activePanels: newPanels };
+      }),
+
+      setFocusMode: (active) => set(() => ({ isFocusMode: active })),
+      startSession: (mode, durationSeconds) => set(() => ({
+        focusSession: { isActive: true, mode, timeLeft: durationSeconds, totalTime: durationSeconds }
+      })),
+      stopSession: () => set((state) => ({
+        focusSession: { ...state.focusSession, isActive: false },
+        isFocusMode: false
+      })),
+      tickSession: () => {
+        const { focusSession, addXp, addNotification } = get();
+        if (!focusSession.isActive) return;
+        if (focusSession.timeLeft > 0) {
+          set({ focusSession: { ...focusSession, timeLeft: focusSession.timeLeft - 1 } });
+        } else {
+          const isBreak = focusSession.mode === 'break';
+          const xp = isBreak ? 10 : 50;
+          addXp(xp);
+          addNotification({
+            type: 'success',
+            title: isBreak ? 'Break Over!' : 'Focus Session Complete!',
+            message: isBreak ? 'Time to get back to work.' : `Great job! You earned ${xp} XP. Take a break?`
+          });
+          set({ focusSession: { ...focusSession, isActive: false, timeLeft: 0 }, isFocusMode: false });
         }
       },
-      blocks: {
-        ...state.blocks,
-        [blockId]: { id: blockId, type: 'text', content: '' }
-      },
-      activePageId: id
-    };
-  }),
-
-  setActivePage: (id) => set({ activePageId: id }),
-
-  updatePageTitle: (id, title) => set((state) => ({
-    pages: {
-      ...state.pages,
-      [id]: { ...state.pages[id], title, updatedAt: new Date() }
+      addXp: (amount) => set((state) => {
+        const currentXp = state.userStats.xp + amount;
+        const level = Math.floor(currentXp / 100) + 1;
+        return { userStats: { ...state.userStats, xp: currentXp, level } };
+      }),
+      addNotification: (n) => set((state) => ({
+        notifications: [{ id: crypto.randomUUID(), timestamp: new Date(), read: false, ...n }, ...state.notifications]
+      })),
+      markRead: (id) => set((state) => ({ notifications: state.notifications.map(n => n.id === id ? { ...n, read: true } : n) })),
+      clearNotifications: () => set({ notifications: [] }),
+      updateSettings: (s) => set((state) => ({ settings: { ...state.settings, ...s } }))
+    }),
+    {
+      name: 'mindhangar-storage', // unique name
+      storage: createJSONStorage(() => localStorage), // (optional) by default, 'localStorage' is used
+      partialize: (state) => ({
+        // Only persist these fields
+        user: state.user,
+        pages: state.pages,
+        blocks: state.blocks,
+        settings: state.settings,
+        userStats: state.userStats
+      }),
     }
-  })),
-
-  deletePage: (id) => set((state) => {
-    // Basic delete (in real app, assume recursion/orphan cleanup)
-    const newPages = { ...state.pages };
-    delete newPages[id];
-    return { 
-      pages: newPages,
-      activePageId: state.activePageId === id ? Object.keys(newPages)[0] || null : state.activePageId 
-    };
-  }),
-
-  addBlock: (pageId, type, content = '', afterBlockId) => set((state) => {
-    const id = crypto.randomUUID();
-    const newBlock: Block = { id, type, content };
-    const page = state.pages[pageId];
-    if (!page) return state;
-
-    const newBlockIds = [...page.blockIds];
-    if (afterBlockId) {
-      const idx = newBlockIds.indexOf(afterBlockId);
-      if (idx !== -1) newBlockIds.splice(idx + 1, 0, id);
-      else newBlockIds.push(id);
-    } else {
-      newBlockIds.push(id);
-    }
-
-    return {
-      blocks: { ...state.blocks, [id]: newBlock },
-      pages: {
-        ...state.pages,
-        [pageId]: { ...page, blockIds: newBlockIds, updatedAt: new Date() }
-      }
-    };
-  }),
-
-  updateBlock: (blockId, content, properties) => set((state) => ({
-    blocks: {
-      ...state.blocks,
-      [blockId]: { 
-        ...state.blocks[blockId], 
-        content, 
-        properties: { ...state.blocks[blockId].properties, ...properties } 
-      }
-    }
-  })),
-
-  deleteBlock: (pageId, blockId) => set((state) => {
-    const page = state.pages[pageId];
-    if (!page) return state;
-    // Don't delete the last block, maybe? For now allow it.
-    const newBlockIds = page.blockIds.filter(id => id !== blockId);
-    
-    // Cleanup block data
-    const newBlocks = { ...state.blocks };
-    delete newBlocks[blockId];
-
-    return {
-      blocks: newBlocks,
-      pages: {
-        ...state.pages,
-        [pageId]: { ...page, blockIds: newBlockIds, updatedAt: new Date() }
-      }
-    };
-  }),
-
-  // Legacy Notes (to be deprecated or integrated)
-  notes: [],
-  addNote: () => {}, 
-  updateNote: () => {}, 
-  deleteNote: () => {},
-
-  isFocusMode: false,
-  userStats: { xp: 120, level: 2, streak: 3 },
-  notifications: [
-    { id: '1', type: 'info', title: 'Welcome', message: 'Get started by setting a goal in the Planner.', timestamp: new Date(), read: false }
-  ],
-  settings: {
-    apiKey: '',
-    username: 'Student',
-    enableCamera: true,
-    theme: 'light'
-  },
-  focusSession: {
-    isActive: false,
-    mode: 'focus',
-    timeLeft: 25 * 60,
-    totalTime: 25 * 60
-  },
-
-  togglePanel: (type) => set((state) => {
-    if (state.isFocusMode && type !== 'focus') return state;
-    const panel = state.activePanels[type];
-    return {
-      activePanels: { ...state.activePanels, [type]: { ...panel, isOpen: !panel.isOpen, zIndex: ++maxZ } },
-      focusedPanel: !panel.isOpen ? type : state.focusedPanel
-    };
-  }),
-
-  updatePanelPosition: (type, data) => set((state) => ({
-    activePanels: { ...state.activePanels, [type]: { ...state.activePanels[type], ...data } }
-  })),
-
-  bringToFront: (type) => set((state) => ({
-    activePanels: { ...state.activePanels, [type]: { ...state.activePanels[type], zIndex: ++maxZ } },
-    focusedPanel: type
-  })),
-
-  resetLayout: (presetName) => set((state) => {
-    const preset = LAYOUT_PRESETS[presetName] || LAYOUT_PRESETS['Studio'];
-    const newPanels: any = {};
-    maxZ = 100;
-    Object.keys(preset.panels).forEach(key => {
-      const k = key as PanelType;
-      const def = preset.panels[k];
-      const isOpen = k === 'settings' ? true : def.isOpen;
-      newPanels[k] = { ...def, isOpen, zIndex: k === 'settings' ? 200 : ++maxZ };
-    });
-    return { activePanels: newPanels };
-  }),
-
-  setFocusMode: (active) => set(() => ({ isFocusMode: active })),
-  startSession: (mode, durationSeconds) => set(() => ({
-    focusSession: { isActive: true, mode, timeLeft: durationSeconds, totalTime: durationSeconds }
-  })),
-  stopSession: () => set((state) => ({
-    focusSession: { ...state.focusSession, isActive: false },
-    isFocusMode: false
-  })),
-  tickSession: () => {
-    const { focusSession, addXp, addNotification } = get();
-    if (!focusSession.isActive) return;
-    if (focusSession.timeLeft > 0) {
-      set({ focusSession: { ...focusSession, timeLeft: focusSession.timeLeft - 1 } });
-    } else {
-      const isBreak = focusSession.mode === 'break';
-      const xp = isBreak ? 10 : 50;
-      addXp(xp);
-      addNotification({
-        type: 'success',
-        title: isBreak ? 'Break Over!' : 'Focus Session Complete!',
-        message: isBreak ? 'Time to get back to work.' : `Great job! You earned ${xp} XP. Take a break?`
-      });
-      set({ focusSession: { ...focusSession, isActive: false, timeLeft: 0 }, isFocusMode: false });
-    }
-  },
-  addXp: (amount) => set((state) => {
-    const currentXp = state.userStats.xp + amount;
-    const level = Math.floor(currentXp / 100) + 1;
-    return { userStats: { ...state.userStats, xp: currentXp, level } };
-  }),
-  addNotification: (n) => set((state) => ({
-    notifications: [{ id: crypto.randomUUID(), timestamp: new Date(), read: false, ...n }, ...state.notifications]
-  })),
-  markRead: (id) => set((state) => ({ notifications: state.notifications.map(n => n.id === id ? { ...n, read: true } : n) })),
-  clearNotifications: () => set({ notifications: [] }),
-  updateSettings: (s) => set((state) => ({ settings: { ...state.settings, ...s } }))
-}));
+  )
+);

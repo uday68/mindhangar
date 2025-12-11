@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Icons } from '../Icons';
 import { useStore } from '../../store/useStore';
 
@@ -8,7 +8,16 @@ export const FocusPanel: React.FC = () => {
   // Local UI state
   const [deepFocusEnabled, setDeepFocusEnabled] = useState(false);
   const [cameraActive, setCameraActive] = useState(false);
-  const [sessionDuration, setSessionDuration] = useState(25); // Default 25 min
+  const [currentDuration, setCurrentDuration] = useState(25); // Current timer target in minutes
+
+  // Settings State
+  const [showSettings, setShowSettings] = useState(false);
+  const [config, setConfig] = useState({
+    focusDuration: 25,
+    shortBreakDuration: 5,
+    longBreakDuration: 15,
+    sensitivity: 'medium' as 'low' | 'medium' | 'high'
+  });
   
   // Focus Test State
   const [showTest, setShowTest] = useState(false);
@@ -20,6 +29,13 @@ export const FocusPanel: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const { isActive, timeLeft, mode } = focusSession;
+
+  // Sync current duration when config changes (if not active)
+  useEffect(() => {
+    if (!isActive) {
+      setCurrentDuration(config.focusDuration);
+    }
+  }, [config.focusDuration, isActive]);
 
   const handleStartFlow = () => {
     if (isActive) {
@@ -54,9 +70,15 @@ export const FocusPanel: React.FC = () => {
     }
   };
 
-  const confirmStartSession = (sessionMode: 'focus' | 'break' = 'focus') => {
+  const confirmStartSession = (sessionMode: 'focus' | 'break' = 'focus', durationOverride?: number) => {
     setShowTest(false);
-    startSession(sessionMode, sessionDuration * 60);
+    
+    let duration = durationOverride;
+    if (!duration) {
+      duration = sessionMode === 'focus' ? config.focusDuration : config.shortBreakDuration;
+    }
+
+    startSession(sessionMode, duration * 60);
     if (deepFocusEnabled && sessionMode === 'focus') {
       setFocusMode(true);
     }
@@ -104,7 +126,7 @@ export const FocusPanel: React.FC = () => {
         </button>
 
         {testState === 'intro' && (
-          <div className="space-y-4">
+          <div className="space-y-4 animate-in fade-in zoom-in duration-300">
             <div className="w-16 h-16 bg-teal-100 text-teal-600 rounded-full flex items-center justify-center mx-auto">
               <Icons.Brain size={32} />
             </div>
@@ -144,7 +166,7 @@ export const FocusPanel: React.FC = () => {
         )}
 
         {testState === 'result' && (
-          <div className="space-y-4">
+          <div className="space-y-4 animate-in fade-in zoom-in duration-300">
             <h3 className="text-gray-500 text-sm uppercase tracking-wide">Reaction Time</h3>
             <div className="text-5xl font-mono font-bold text-gray-800">{reactionTime}ms</div>
             <div className={`text-xl font-bold ${getFocusGrade(reactionTime).color}`}>
@@ -156,7 +178,7 @@ export const FocusPanel: React.FC = () => {
                 onClick={() => confirmStartSession('focus')}
                 className="w-full bg-indigo-600 text-white rounded-lg py-3 font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-200"
               >
-                Start Studying
+                Start Studying ({config.focusDuration}m)
               </button>
               <button onClick={() => setTestState('intro')} className="text-xs text-gray-400">Retry</button>
             </div>
@@ -166,19 +188,120 @@ export const FocusPanel: React.FC = () => {
     );
   }
 
+  // Settings View
+  if (showSettings && !isActive) {
+    return (
+      <div className="flex flex-col h-full bg-gray-50 p-4 relative animate-in slide-in-from-right duration-300">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="font-bold text-gray-700 flex items-center gap-2">
+            <Icons.Settings size={18} /> Focus Settings
+          </h3>
+          <button onClick={() => setShowSettings(false)} className="p-1 hover:bg-gray-200 rounded text-gray-500">
+            <Icons.X size={18} />
+          </button>
+        </div>
+
+        <div className="space-y-6 overflow-y-auto">
+          {/* Timers */}
+          <div className="space-y-4">
+            <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Timer Durations (min)</h4>
+            
+            <div>
+              <div className="flex justify-between text-sm mb-1">
+                <span className="text-gray-600">Focus Session</span>
+                <span className="font-bold text-teal-600">{config.focusDuration}m</span>
+              </div>
+              <input 
+                type="range" min="15" max="90" step="5"
+                value={config.focusDuration}
+                onChange={(e) => setConfig({...config, focusDuration: parseInt(e.target.value)})}
+                className="w-full accent-teal-600 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+              />
+            </div>
+
+            <div>
+              <div className="flex justify-between text-sm mb-1">
+                <span className="text-gray-600">Short Break</span>
+                <span className="font-bold text-indigo-600">{config.shortBreakDuration}m</span>
+              </div>
+              <input 
+                type="range" min="2" max="15"
+                value={config.shortBreakDuration}
+                onChange={(e) => setConfig({...config, shortBreakDuration: parseInt(e.target.value)})}
+                className="w-full accent-indigo-600 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+              />
+            </div>
+
+            <div>
+              <div className="flex justify-between text-sm mb-1">
+                <span className="text-gray-600">Long Break</span>
+                <span className="font-bold text-indigo-600">{config.longBreakDuration}m</span>
+              </div>
+              <input 
+                type="range" min="10" max="45" step="5"
+                value={config.longBreakDuration}
+                onChange={(e) => setConfig({...config, longBreakDuration: parseInt(e.target.value)})}
+                className="w-full accent-indigo-600 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+              />
+            </div>
+          </div>
+
+          {/* AI / Sensitivity */}
+          <div className="space-y-3 pt-4 border-t border-gray-200">
+             <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Detection Sensitivity</h4>
+             <div className="flex bg-white rounded-lg p-1 border border-gray-200 shadow-sm">
+                {(['low', 'medium', 'high'] as const).map((level) => (
+                  <button
+                    key={level}
+                    onClick={() => setConfig({...config, sensitivity: level})}
+                    className={`flex-1 py-1.5 text-xs font-medium rounded capitalize transition-colors ${config.sensitivity === level ? 'bg-teal-100 text-teal-700 font-bold' : 'text-gray-500 hover:text-gray-700'}`}
+                  >
+                    {level}
+                  </button>
+                ))}
+             </div>
+             <p className="text-[10px] text-gray-400 leading-tight">
+               Higher sensitivity will detect distractions more aggressively but may cause false alarms.
+             </p>
+          </div>
+        </div>
+
+        <div className="mt-auto pt-4">
+          <button 
+            onClick={() => setShowSettings(false)}
+            className="w-full py-3 bg-gray-800 text-white rounded-xl font-bold text-sm hover:bg-gray-900 transition-colors"
+          >
+            Save Changes
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   // Normal Focus Panel
   return (
-    <div className="flex flex-col h-full gap-4 items-center justify-center p-2 relative">
+    <div className="flex flex-col h-full gap-4 items-center justify-center p-2 relative group">
       {isFocusMode && (
         <div className="absolute top-2 right-2 bg-red-100 text-red-600 px-2 py-1 rounded text-[10px] font-bold animate-pulse">
           LOCKED MODE ACTIVE
         </div>
       )}
+      
+      {/* Settings Toggle (Only visible when not active) */}
+      {!isActive && !isFocusMode && (
+        <button 
+          onClick={() => setShowSettings(true)}
+          className="absolute top-2 left-2 p-2 text-gray-300 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+          title="Focus Settings"
+        >
+          <Icons.Settings size={18} />
+        </button>
+      )}
 
       {/* Timer Display */}
       <div className="text-center">
         <h2 className={`font-bold text-gray-800 font-mono tracking-tighter mb-2 transition-all ${isFocusMode ? 'text-8xl scale-110' : 'text-6xl'}`}>
-          {formatTime(timeLeft)}
+          {formatTime(isActive ? timeLeft : (mode === 'break' ? timeLeft : currentDuration * 60))}
         </h2>
         <div className="text-sm uppercase tracking-widest text-gray-400 mb-4 font-semibold">{isActive ? mode : 'Ready'}</div>
         
@@ -192,14 +315,23 @@ export const FocusPanel: React.FC = () => {
                 : 'bg-teal-600 text-white hover:bg-teal-700 shadow-teal-500/30'
             }`}
           >
-            {isActive ? 'Stop Session' : 'Start Focus'}
+            {isActive ? 'Stop Session' : `Start Focus (${currentDuration}m)`}
           </button>
           
           {!isActive && (
              <div className="flex gap-2 justify-center mt-2">
-                <button onClick={() => setSessionDuration(25)} className={`px-2 py-1 text-xs rounded ${sessionDuration===25 ? 'bg-gray-200 font-bold' : 'bg-gray-100'}`}>25m</button>
-                <button onClick={() => setSessionDuration(50)} className={`px-2 py-1 text-xs rounded ${sessionDuration===50 ? 'bg-gray-200 font-bold' : 'bg-gray-100'}`}>50m</button>
-                <button onClick={() => setSessionDuration(5)} className={`px-2 py-1 text-xs rounded ${sessionDuration===5 ? 'bg-gray-200 font-bold' : 'bg-gray-100'}`}>5m Break</button>
+                <button 
+                   onClick={() => setCurrentDuration(config.focusDuration)} 
+                   className={`px-3 py-1 text-xs rounded transition-colors ${currentDuration === config.focusDuration ? 'bg-teal-100 text-teal-800 font-bold border border-teal-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+                >
+                  Focus {config.focusDuration}m
+                </button>
+                <button 
+                   onClick={() => confirmStartSession('break', config.shortBreakDuration)} 
+                   className="px-3 py-1 text-xs rounded bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-100 font-medium transition-colors"
+                >
+                  Break {config.shortBreakDuration}m
+                </button>
              </div>
           )}
         </div>
@@ -229,7 +361,7 @@ export const FocusPanel: React.FC = () => {
 
       {/* Camera Section */}
       {!isFocusMode && (
-        <div className="w-full max-w-[200px] bg-black/5 rounded-xl overflow-hidden relative aspect-video flex items-center justify-center border border-gray-200">
+        <div className="w-full max-w-[200px] bg-black/5 rounded-xl overflow-hidden relative aspect-video flex items-center justify-center border border-gray-200 transition-all hover:border-teal-300">
           <video 
             ref={videoRef} 
             autoPlay 
@@ -245,10 +377,16 @@ export const FocusPanel: React.FC = () => {
           )}
           <button 
             onClick={toggleCamera} 
-            className="absolute bottom-1 right-1 bg-white/80 backdrop-blur text-[10px] px-2 py-0.5 rounded shadow-sm hover:bg-white"
+            className="absolute bottom-1 right-1 bg-white/80 backdrop-blur text-[10px] px-2 py-0.5 rounded shadow-sm hover:bg-white font-medium"
           >
             {cameraActive ? 'Stop' : 'Track'}
           </button>
+          
+          {cameraActive && (
+             <div className="absolute top-1 left-1 px-1.5 py-0.5 bg-black/50 backdrop-blur rounded text-[8px] text-white font-mono">
+               SENS: {config.sensitivity.toUpperCase()}
+             </div>
+          )}
         </div>
       )}
     </div>

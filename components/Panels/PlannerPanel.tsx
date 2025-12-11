@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { generatePlanSuggestion, generatePerformanceReview, generateLearningRoadmap, ReviewData } from '../../services/geminiService';
 import { LearningRoadmap } from '../../types';
+import { useStore } from '../../store/useStore';
 import { Icons } from '../Icons';
 
 export const PlannerPanel: React.FC = () => {
+  const { settings } = useStore();
   const [activeTab, setActiveTab] = useState<'schedule' | 'strategy' | 'roadmap'>('roadmap');
 
   // Schedule State
@@ -30,16 +32,16 @@ export const PlannerPanel: React.FC = () => {
   const [roadmapLoading, setRoadmapLoading] = useState(false);
 
   const handleGeneratePlan = async () => {
-    if (!goals) return;
+    if (!goals || !settings.apiKey) return;
     setScheduleLoading(true);
-    const result = await generatePlanSuggestion(goals.split(','));
+    const result = await generatePlanSuggestion(settings.apiKey, goals.split(','));
     const lines = result ? result.split('\n').filter(line => line.trim().length > 0) : ["No plan generated."];
     setPlan(lines);
     setScheduleLoading(false);
   };
 
   const handleGenerateReview = async () => {
-    if (!reviewTopic || !confusion) return;
+    if (!reviewTopic || !confusion || !settings.apiKey) return;
     setReviewLoading(true);
     setReviewResult(null);
     
@@ -49,18 +51,74 @@ export const PlannerPanel: React.FC = () => {
       confusion
     };
     
-    const result = await generatePerformanceReview(data);
+    const result = await generatePerformanceReview(settings.apiKey, data);
     setReviewResult(result);
     setReviewLoading(false);
   };
 
   const handleGenerateRoadmap = async () => {
-    if (!roadmapInput.goal || !roadmapInput.time) return;
+    if (!roadmapInput.goal || !roadmapInput.time || !settings.apiKey) return;
     setRoadmapLoading(true);
-    const result = await generateLearningRoadmap(roadmapInput.goal, roadmapInput.level, roadmapInput.time);
+    const result = await generateLearningRoadmap(settings.apiKey, roadmapInput.goal, roadmapInput.level, roadmapInput.time);
     setRoadmap(result);
     setRoadmapLoading(false);
   };
+
+  const handleSaveRoadmapToNotes = () => {
+    if (!roadmap) return;
+    // Direct store access for synchronous chain of actions
+    const store = useStore.getState();
+    
+    // 1. Create Page
+    store.createPage();
+    const newPageId = useStore.getState().activePageId; // Get the ID of the newly created page
+
+    if (newPageId) {
+      // 2. Set Title
+      store.updatePageTitle(newPageId, `Roadmap: ${roadmap.title}`);
+      
+      // 3. Add Content Blocks
+      store.addBlock(newPageId, 'text', `**Goal:** ${roadmap.description}`);
+      
+      roadmap.modules.forEach((mod) => {
+        store.addBlock(newPageId, 'h2', `${mod.week}: ${mod.title}`);
+        store.addBlock(newPageId, 'text', mod.description);
+        
+        if (mod.topics.length > 0) {
+          store.addBlock(newPageId, 'h3', 'Key Topics');
+          mod.topics.forEach(topic => store.addBlock(newPageId, 'bullet', topic));
+        }
+
+        if (mod.resources.length > 0) {
+          store.addBlock(newPageId, 'h3', 'Resources');
+          mod.resources.forEach(res => {
+            const icon = res.type === 'video' ? '🎥' : '📄';
+            store.addBlock(newPageId, 'todo', `${icon} ${res.title}`);
+          });
+        }
+      });
+
+      // 4. Notify User
+      store.addNotification({
+        type: 'success',
+        title: 'Roadmap Saved',
+        message: 'Your learning plan has been saved to Notes.',
+      });
+      
+      // Optional: Switch to Notes panel?
+      // store.togglePanel('notes');
+    }
+  };
+
+  if (!settings.apiKey) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full text-center p-4">
+        <Icons.Settings className="text-gray-400 mb-2" size={32} />
+        <h3 className="font-bold text-gray-700">API Key Required</h3>
+        <p className="text-xs text-gray-500 mb-4">Please configure your Gemini API Key in Settings to use the AI Planner.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full">
@@ -86,7 +144,7 @@ export const PlannerPanel: React.FC = () => {
         </button>
       </div>
 
-      {/* --- ROADMAP TAB (New) --- */}
+      {/* --- ROADMAP TAB --- */}
       {activeTab === 'roadmap' && (
         <div className="h-full flex flex-col overflow-hidden">
           {!roadmap ? (
@@ -152,7 +210,12 @@ export const PlannerPanel: React.FC = () => {
                <div className="bg-white p-4 border-b border-gray-100 shrink-0">
                  <div className="flex justify-between items-start mb-1">
                    <h3 className="font-bold text-lg text-gray-800 leading-tight">{roadmap.title}</h3>
-                   <button onClick={() => setRoadmap(null)} className="text-xs text-gray-400 hover:text-red-500 underline whitespace-nowrap ml-4">Reset</button>
+                   <div className="flex gap-2">
+                     <button onClick={handleSaveRoadmapToNotes} className="flex items-center gap-1 text-xs text-teal-600 font-bold hover:bg-teal-50 px-2 py-1 rounded transition-colors" title="Save to Notes">
+                        <Icons.Save size={14} /> Save
+                     </button>
+                     <button onClick={() => setRoadmap(null)} className="text-xs text-gray-400 hover:text-red-500 underline whitespace-nowrap">Reset</button>
+                   </div>
                  </div>
                  <p className="text-xs text-gray-500">{roadmap.description}</p>
                </div>

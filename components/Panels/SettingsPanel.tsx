@@ -68,9 +68,12 @@ export const SettingsPanel: React.FC = () => {
                 placeholder="Paste key starting with AIza..."
                 className="w-full bg-white border border-gray-200 rounded-lg pl-3 pr-8 py-2 text-xs focus:ring-2 focus:ring-indigo-500 outline-none"
               />
-              <div className="absolute right-2 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-gray-300" title="Status" />
+              <div 
+                className={`absolute right-2 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full ${settings.apiKey && settings.apiKey.length > 20 ? 'bg-green-500' : 'bg-gray-300'}`} 
+                title={settings.apiKey ? "Key configured" : "Key missing"} 
+              />
             </div>
-            <p className="text-[10px] text-gray-400 mt-1">Required for Chat, Summarization, and Planner.</p>
+            <p className="text-[10px] text-gray-400 mt-1">Required for Chat, Summarization, and Planner. Saved locally.</p>
           </div>
         </div>
       </section>
@@ -108,7 +111,7 @@ export const SettingsPanel: React.FC = () => {
       </section>
 
       <div className="mt-auto text-center">
-        <p className="text-[10px] text-gray-400">MindHangar v1.3.0 • Local Storage Only</p>
+        <p className="text-[10px] text-gray-400">MindHangar Enterprise v2.0 • Local Secure Storage</p>
       </div>
     </div>
   );
