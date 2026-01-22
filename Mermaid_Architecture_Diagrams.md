@@ -243,59 +243,60 @@ graph TB
 ```mermaid
 flowchart TD
     Input[User Input<br/>Any Indian Language]
-    
+
     subgraph "Language Detection"
         ScriptDetect[Script Detection<br/>Devanagari/Tamil/Telugu/etc.]
         LangIdentify[Language Identification<br/>Hindi/Tamil/Telugu/Bengali/etc.]
     end
-    
+
     subgraph "Cultural Context"
         RegionMap[Region Mapping<br/>North/South/East/West/Northeast/Central]
         CulturalLoad[Load Cultural Context<br/>Festivals/Figures/Geography]
         ExampleAdapt[Example Adaptation<br/>Apple Pie → Gulab Jamun]
     end
-    
+
     subgraph "AI Processing"
         ContextAI[Context-Aware AI<br/>Amazon Bedrock + Cultural Training]
         ResponseGen[Response Generation<br/>Indian Examples & References]
     end
-    
+
     subgraph "Educational Alignment"
         BoardCheck[Educational Board<br/>CBSE/ICSE/State]
         GradeAlign[Grade Alignment<br/>Age-appropriate Content]
         ExamPrep[Exam Preparation<br/>JEE/NEET/UPSC Pattern]
     end
-    
+
     subgraph "Output Generation"
         Translation[Translation to Target Language<br/>Maintain Cultural Context]
         ScriptConvert[Script Conversion<br/>Roman ↔ Regional Scripts]
         VoiceGen[Voice Generation<br/>Regional Accent (Polly)]
     end
-    
+
     Output[Culturally Rich Response<br/>User's Preferred Language]
-    
+
     Input --> ScriptDetect
     ScriptDetect --> LangIdentify
     LangIdentify --> RegionMap
-    
+
     RegionMap --> CulturalLoad
     CulturalLoad --> ExampleAdapt
     ExampleAdapt --> ContextAI
-    
+
     ContextAI --> ResponseGen
     ResponseGen --> BoardCheck
     BoardCheck --> GradeAlign
-    
+
     GradeAlign --> ExamPrep
     ExamPrep --> Translation
     Translation --> ScriptConvert
-    
+
     ScriptConvert --> VoiceGen
     VoiceGen --> Output
-    
+
     style ContextAI fill:#ff6b35
     style CulturalLoad fill:#ff9999
     style ExampleAdapt fill:#ff9999
+
 ```
 
 ## 6. User Journey Flow
