@@ -35,6 +35,9 @@ export interface LanguageConfig {
   region: IndianRegion;
   rtl: boolean;
   fontFamily: string;
+  direction: 'ltr' | 'rtl';
+  languageCode: string;
+  voiceSupported: boolean;
 }
 
 export interface CulturalContext {
@@ -71,6 +74,7 @@ export interface VoiceProcessingResult {
   confidence: number;
   language: SupportedLanguage;
   accent?: string;
+  alternatives?: string[];
 }
 
 export interface LocalizedContent {
@@ -123,7 +127,10 @@ export const LANGUAGE_CONFIGS: Record<SupportedLanguage, LanguageConfig> = {
     script: 'devanagari',
     region: 'north',
     rtl: false,
-    fontFamily: 'Noto Sans Devanagari, sans-serif'
+    fontFamily: 'Noto Sans Devanagari, sans-serif',
+    direction: 'ltr',
+    languageCode: 'hi-IN',
+    voiceSupported: true
   },
   en: {
     code: 'en',
@@ -132,7 +139,10 @@ export const LANGUAGE_CONFIGS: Record<SupportedLanguage, LanguageConfig> = {
     script: 'roman',
     region: 'north', // Default, but used across all regions
     rtl: false,
-    fontFamily: 'Inter, sans-serif'
+    fontFamily: 'Inter, sans-serif',
+    direction: 'ltr',
+    languageCode: 'en-IN',
+    voiceSupported: true
   },
   ta: {
     code: 'ta',
@@ -141,7 +151,10 @@ export const LANGUAGE_CONFIGS: Record<SupportedLanguage, LanguageConfig> = {
     script: 'tamil',
     region: 'south',
     rtl: false,
-    fontFamily: 'Noto Sans Tamil, sans-serif'
+    fontFamily: 'Noto Sans Tamil, sans-serif',
+    direction: 'ltr',
+    languageCode: 'ta-IN',
+    voiceSupported: true
   },
   te: {
     code: 'te',
@@ -150,7 +163,10 @@ export const LANGUAGE_CONFIGS: Record<SupportedLanguage, LanguageConfig> = {
     script: 'telugu',
     region: 'south',
     rtl: false,
-    fontFamily: 'Noto Sans Telugu, sans-serif'
+    fontFamily: 'Noto Sans Telugu, sans-serif',
+    direction: 'ltr',
+    languageCode: 'te-IN',
+    voiceSupported: true
   },
   bn: {
     code: 'bn',
@@ -159,7 +175,10 @@ export const LANGUAGE_CONFIGS: Record<SupportedLanguage, LanguageConfig> = {
     script: 'bengali',
     region: 'east',
     rtl: false,
-    fontFamily: 'Noto Sans Bengali, sans-serif'
+    fontFamily: 'Noto Sans Bengali, sans-serif',
+    direction: 'ltr',
+    languageCode: 'bn-IN',
+    voiceSupported: true
   },
   mr: {
     code: 'mr',
@@ -168,7 +187,10 @@ export const LANGUAGE_CONFIGS: Record<SupportedLanguage, LanguageConfig> = {
     script: 'devanagari',
     region: 'west',
     rtl: false,
-    fontFamily: 'Noto Sans Devanagari, sans-serif'
+    fontFamily: 'Noto Sans Devanagari, sans-serif',
+    direction: 'ltr',
+    languageCode: 'mr-IN',
+    voiceSupported: true
   },
   gu: {
     code: 'gu',
@@ -177,7 +199,10 @@ export const LANGUAGE_CONFIGS: Record<SupportedLanguage, LanguageConfig> = {
     script: 'gujarati',
     region: 'west',
     rtl: false,
-    fontFamily: 'Noto Sans Gujarati, sans-serif'
+    fontFamily: 'Noto Sans Gujarati, sans-serif',
+    direction: 'ltr',
+    languageCode: 'gu-IN',
+    voiceSupported: true
   },
   kn: {
     code: 'kn',
@@ -186,7 +211,10 @@ export const LANGUAGE_CONFIGS: Record<SupportedLanguage, LanguageConfig> = {
     script: 'kannada',
     region: 'south',
     rtl: false,
-    fontFamily: 'Noto Sans Kannada, sans-serif'
+    fontFamily: 'Noto Sans Kannada, sans-serif',
+    direction: 'ltr',
+    languageCode: 'kn-IN',
+    voiceSupported: true
   }
 };
 
