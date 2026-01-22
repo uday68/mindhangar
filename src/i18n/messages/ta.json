@@ -1,0 +1,23 @@
+{
+  "app.name": "மைண்ட்ஹேங்கர் AI பாரதத்திற்கு",
+  "app.tagline": "ஒவ்வொரு இந்திய மாணவருக்கும் AI-இயங்கும் கல்வி",
+  "common.welcome": "வரவேற்கிறோம்",
+  "common.hello": "வணக்கம்",
+  "common.loading": "ஏற்றுகிறது...",
+  "common.error": "பிழை",
+  "common.success": "வெற்றி",
+  "common.save": "சேமி",
+  "common.cancel": "ரத்து செய்",
+  "common.continue": "தொடர்",
+  "common.back": "பின்",
+  "common.next": "அடுத்து",
+  "common.previous": "முந்தைய",
+  "common.submit": "சமர்ப்பி",
+  "common.close": "மூடு",
+  "common.edit": "திருத்து",
+  "common.delete": "நீக்கு",
+  "common.search": "தேடு",
+  "common.filter": "வடிகட்டி",
+  "common.sort": "வரிசைப்படுத்து",
+  "common.refresh": "புதுப்பி"
+}

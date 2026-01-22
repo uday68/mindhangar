@@ -1,0 +1,23 @@
+{
+  "app.name": "মাইন্ডহ্যাঙ্গার AI ভারতের জন্য",
+  "app.tagline": "প্রতিটি ভারতীয় ছাত্রের জন্য AI-চালিত শিক্ষা",
+  "common.welcome": "স্বাগতম",
+  "common.hello": "নমস্কার",
+  "common.loading": "লোড হচ্ছে...",
+  "common.error": "ত্রুটি",
+  "common.success": "সফলতা",
+  "common.save": "সংরক্ষণ করুন",
+  "common.cancel": "বাতিল করুন",
+  "common.continue": "চালিয়ে যান",
+  "common.back": "পিছনে",
+  "common.next": "পরবর্তী",
+  "common.previous": "পূর্ববর্তী",
+  "common.submit": "জমা দিন",
+  "common.close": "বন্ধ করুন",
+  "common.edit": "সম্পাদনা করুন",
+  "common.delete": "মুছে ফেলুন",
+  "common.search": "অনুসন্ধান করুন",
+  "common.filter": "ফিল্টার",
+  "common.sort": "সাজান",
+  "common.refresh": "রিফ্রেশ করুন"
+}

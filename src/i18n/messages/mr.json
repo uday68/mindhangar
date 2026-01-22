@@ -1,0 +1,23 @@
+{
+  "app.name": "मइंडहॅंगर AI भारतासाठी",
+  "app.tagline": "प्रत्येक भारतीय विद्यार्थ्यासाठी AI-चालित शिक्षण",
+  "common.welcome": "स्वागत",
+  "common.hello": "नमस्कार",
+  "common.loading": "लोड होत आहे...",
+  "common.error": "त्रुटी",
+  "common.success": "यश",
+  "common.save": "जतन करा",
+  "common.cancel": "रद्द करा",
+  "common.continue": "सुरू ठेवा",
+  "common.back": "मागे",
+  "common.next": "पुढे",
+  "common.previous": "मागील",
+  "common.submit": "सबमिट करा",
+  "common.close": "बंद करा",
+  "common.edit": "संपादित करा",
+  "common.delete": "हटवा",
+  "common.search": "शोधा",
+  "common.filter": "फिल्टर",
+  "common.sort": "क्रमवारी लावा",
+  "common.refresh": "रिफ्रेश करा"
+}

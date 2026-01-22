@@ -1,0 +1,23 @@
+{
+  "app.name": "માઇન્ડહેંગર AI ભારત માટે",
+  "app.tagline": "દરેક ભારતીય વિદ્યાર્થી માટે AI-સંચાલિત શિક્ષણ",
+  "common.welcome": "સ્વાગત",
+  "common.hello": "નમસ્તે",
+  "common.loading": "લોડ થઈ રહ્યું છે...",
+  "common.error": "ભૂલ",
+  "common.success": "સફળતા",
+  "common.save": "સેવ કરો",
+  "common.cancel": "રદ કરો",
+  "common.continue": "ચાલુ રાખો",
+  "common.back": "પાછળ",
+  "common.next": "આગળ",
+  "common.previous": "પહેલાં",
+  "common.submit": "સબમિટ કરો",
+  "common.close": "બંધ કરો",
+  "common.edit": "સંપાદિત કરો",
+  "common.delete": "કાઢી નાખો",
+  "common.search": "શોધો",
+  "common.filter": "ફિલ્ટર",
+  "common.sort": "ક્રમમાં ગોઠવો",
+  "common.refresh": "રિફ્રેશ કરો"
+}

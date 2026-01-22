@@ -1,0 +1,23 @@
+{
+  "app.name": "ಮೈಂಡ್‌ಹ್ಯಾಂಗರ್ AI ಭಾರತಕ್ಕಾಗಿ",
+  "app.tagline": "ಪ್ರತಿ ಭಾರತೀಯ ವಿದ್ಯಾರ್ಥಿಗೆ AI-ಚಾಲಿತ ಶಿಕ್ಷಣ",
+  "common.welcome": "ಸ್ವಾಗತ",
+  "common.hello": "ನಮಸ್ಕಾರ",
+  "common.loading": "ಲೋಡ್ ಆಗುತ್ತಿದೆ...",
+  "common.error": "ದೋಷ",
+  "common.success": "ಯಶಸ್ಸು",
+  "common.save": "ಉಳಿಸಿ",
+  "common.cancel": "ರದ್ದುಗೊಳಿಸಿ",
+  "common.continue": "ಮುಂದುವರಿಸಿ",
+  "common.back": "ಹಿಂದೆ",
+  "common.next": "ಮುಂದೆ",
+  "common.previous": "ಹಿಂದಿನ",
+  "common.submit": "ಸಲ್ಲಿಸಿ",
+  "common.close": "ಮುಚ್ಚಿ",
+  "common.edit": "ಸಂಪಾದಿಸಿ",
+  "common.delete": "ಅಳಿಸಿ",
+  "common.search": "ಹುಡುಕಿ",
+  "common.filter": "ಫಿಲ್ಟರ್",
+  "common.sort": "ವಿಂಗಡಿಸಿ",
+  "common.refresh": "ರಿಫ್ರೆಶ್ ಮಾಡಿ"
+}
