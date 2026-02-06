@@ -1,4 +1,5 @@
 import { drizzle } from 'drizzle-orm/better-sqlite3';
+import { eq } from 'drizzle-orm';
 import Database from 'better-sqlite3';
 import * as schema from './schema';
 
@@ -144,7 +145,7 @@ export class DatabaseManager {
       if (totalSize <= maxSizeBytes) break;
       
       await db.delete(schema.offlineCache).where(
-        (cache, { eq }) => eq(cache.id, item.id)
+        eq(schema.offlineCache.id, item.id)
       );
       
       totalSize -= item.cacheSize;

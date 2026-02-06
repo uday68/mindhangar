@@ -80,9 +80,9 @@ export const Workspace: React.FC = () => {
   }, [focusSession.isActive, tickSession]);
 
   return (
-    <div className="flex-1 relative h-screen w-full overflow-hidden bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-50 via-gray-100 to-teal-50">
+    <div className="flex-1 relative h-full w-full overflow-hidden bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-50 via-gray-100 to-teal-50 workspace-container">
       {/* Background decoration - Clean Grid */}
-      <div className="absolute top-0 left-0 w-full h-full opacity-40 pointer-events-none" 
+      <div className="absolute top-0 left-0 w-full h-full opacity-40 pointer-events-none background-decoration" 
            style={{ 
              backgroundImage: 'radial-gradient(#94a3b8 1px, transparent 1px)', 
              backgroundSize: '20px 20px' 
@@ -156,6 +156,7 @@ export const Workspace: React.FC = () => {
               zIndex: isLocked ? 50 : (isMaximized ? 9999 : panel.zIndex),
               transition: (isLocked || isMaximized) ? 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)' : 'none'
             }}
+            className={`panel-container ${isMaximized ? 'panel-maximized' : ''}`}
             bounds="parent"
             minWidth={320}
             minHeight={250}

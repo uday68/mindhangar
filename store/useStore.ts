@@ -3,6 +3,18 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { PanelType, PanelState, Note, UserStats, Notification, AppSettings, FocusSession, User, Page, Block, BlockType, LearnerProfile, AuthProvider } from '../types';
 import { authService } from '../services/authService';
 
+// Polyfill for crypto.randomUUID
+function generateUUID(): string {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
 interface AppState {
   activePanels: Record<PanelType, PanelState>;
   focusedPanel: PanelType | null;
@@ -106,7 +118,7 @@ export const LAYOUT_PRESETS: Record<string, {
       focus: { id: 'focus', x: 1040, y: 640, width: 320, height: 220, isOpen: false },
       quiz: { id: 'quiz', x: 450, y: 100, width: 500, height: 600, isOpen: false },
       notifications: { id: 'notifications', x: 1040, y: 20, width: 320, height: 400, isOpen: false },
-      settings: { id: 'settings', x: 480, y: 150, width: 400, height: 550, isOpen: true },
+      settings: { id: 'settings', x: 480, y: 150, width: 400, height: 550, isOpen: false },
     }
   },
   'Cinema': {
@@ -121,7 +133,7 @@ export const LAYOUT_PRESETS: Record<string, {
       focus: { id: 'focus', x: 1020, y: 700, width: 300, height: 200, isOpen: false },
       quiz: { id: 'quiz', x: 300, y: 100, width: 500, height: 600, isOpen: false },
       notifications: { id: 'notifications', x: 1000, y: 20, width: 300, height: 400, isOpen: false },
-      settings: { id: 'settings', x: 400, y: 100, width: 400, height: 550, isOpen: true },
+      settings: { id: 'settings', x: 400, y: 100, width: 400, height: 550, isOpen: false },
     }
   },
   'Research': {
@@ -136,7 +148,7 @@ export const LAYOUT_PRESETS: Record<string, {
       focus: { id: 'focus', x: 20, y: 20, width: 300, height: 200, isOpen: false },
       quiz: { id: 'quiz', x: 400, y: 100, width: 500, height: 600, isOpen: false },
       notifications: { id: 'notifications', x: 1000, y: 20, width: 300, height: 400, isOpen: false },
-      settings: { id: 'settings', x: 400, y: 100, width: 400, height: 550, isOpen: true },
+      settings: { id: 'settings', x: 400, y: 100, width: 400, height: 550, isOpen: false },
     }
   }
 };
@@ -205,7 +217,7 @@ export const useStore = create<AppState>()(
           user: { ...state.user, isPro: true },
           isUpgradeModalOpen: false,
           notifications: [{
-            id: crypto.randomUUID(),
+            id: generateUUID(),
             type: 'success',
             title: 'Welcome to Pro!',
             message: 'You now have access to AI Camera, Context Chat, and Unlimited Search.',
@@ -221,8 +233,8 @@ export const useStore = create<AppState>()(
       activePageId: null,
 
       createPage: (parentId) => set((state) => {
-        const id = crypto.randomUUID();
-        const blockId = crypto.randomUUID();
+        const id = generateUUID();
+        const blockId = generateUUID();
         return {
           pages: {
             ...state.pages,
@@ -263,7 +275,7 @@ export const useStore = create<AppState>()(
       }),
 
       addBlock: (pageId, type, content = '', afterBlockId) => set((state) => {
-        const id = crypto.randomUUID();
+        const id = generateUUID();
         const newBlock: Block = { id, type, content };
         const page = state.pages[pageId];
         if (!page) return state;
@@ -430,7 +442,7 @@ export const useStore = create<AppState>()(
         return { userStats: { ...state.userStats, xp: currentXp, level } };
       }),
       addNotification: (n) => set((state) => ({
-        notifications: [{ id: crypto.randomUUID(), timestamp: new Date(), read: false, ...n }, ...state.notifications]
+        notifications: [{ id: generateUUID(), timestamp: new Date(), read: false, ...n }, ...state.notifications]
       })),
       markRead: (id) => set((state) => ({ notifications: state.notifications.map(n => n.id === id ? { ...n, read: true } : n) })),
       clearNotifications: () => set({ notifications: [] }),

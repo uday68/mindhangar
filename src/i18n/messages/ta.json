@@ -1,6 +1,7 @@
 {
   "app.name": "மைண்ட்ஹேங்கர் AI பாரதத்திற்கு",
   "app.tagline": "ஒவ்வொரு இந்திய மாணவருக்கும் AI-இயங்கும் கல்வி",
+  
   "common.welcome": "வரவேற்கிறோம்",
   "common.hello": "வணக்கம்",
   "common.loading": "ஏற்றுகிறது...",
@@ -19,5 +20,85 @@
   "common.search": "தேடு",
   "common.filter": "வடிகட்டி",
   "common.sort": "வரிசைப்படுத்து",
-  "common.refresh": "புதுப்பி"
+  "common.refresh": "புதுப்பி",
+  
+  "language.select": "மொழியைத் தேர்ந்தெடு",
+  "language.current": "தற்போதைய மொழி",
+  "language.change": "மொழியை மாற்று",
+  
+  "onboarding.title": "மைண்ட்ஹேங்கர் AI பாரதத்திற்கு வரவேற்கிறோம்",
+  "onboarding.subtitle": "உங்கள் கற்றல் அனுபவத்தை தனிப்பயனாக்குவோம்",
+  "onboarding.language.title": "உங்கள் விருப்ப மொழியைத் தேர்ந்தெடுக்கவும்",
+  "onboarding.language.subtitle": "நீங்கள் மிகவும் வசதியாக இருக்கும் மொழியைத் தேர்ந்தெடுக்கவும்",
+  "onboarding.board.title": "உங்கள் கல்வி வாரியத்தைத் தேர்ந்தெடுக்கவும்",
+  "onboarding.board.subtitle": "இது உங்கள் பாடத்திட்டத்திற்கான உள்ளடக்கத்தை தனிப்பயனாக்க உதவுகிறது",
+  "onboarding.grade.title": "உங்கள் தற்போதைய வகுப்பு என்ன?",
+  "onboarding.grade.subtitle": "வயதுக்கு ஏற்ற உள்ளடக்கத்தைக் காண்பிப்போம்",
+  "onboarding.exams.title": "போட்டித் தேர்வு இலக்குகள்",
+  "onboarding.exams.subtitle": "நீங்கள் தயாராகும் தேர்வுகளைத் தேர்ந்தெடுக்கவும் (விருப்பமானது)",
+  "onboarding.region.title": "உங்கள் பகுதி",
+  "onboarding.region.subtitle": "இது கலாச்சார ரீதியாக பொருத்தமான உள்ளடக்கத்தை வழங்க உதவுகிறது",
+  
+  "board.cbse": "CBSE",
+  "board.icse": "ICSE",
+  "board.state": "மாநில வாரியம்",
+  "board.other": "மற்றவை",
+  
+  "exam.jee": "JEE மெயின்/அட்வான்ஸ்ட்",
+  "exam.neet": "NEET",
+  "exam.upsc": "UPSC",
+  "exam.cat": "CAT",
+  "exam.gate": "GATE",
+  "exam.none": "எதுவுமில்லை",
+  
+  "region.north": "வட இந்தியா",
+  "region.south": "தென் இந்தியா",
+  "region.west": "மேற்கு இந்தியா",
+  "region.east": "கிழக்கு இந்தியா",
+  "region.northeast": "வடகிழக்கு இந்தியா",
+  "region.central": "மத்திய இந்தியா",
+  
+  "dashboard.title": "டாஷ்போர்டு",
+  "dashboard.welcome": "மீண்டும் வரவேற்கிறோம், {name}!",
+  "dashboard.continue_learning": "கற்றலைத் தொடரவும்",
+  "dashboard.study_plan": "படிப்புத் திட்டம்",
+  "dashboard.progress": "முன்னேற்றம்",
+  "dashboard.achievements": "சாதனைகள்",
+  
+  "study.planner": "படிப்பு திட்டமிடுபவர்",
+  "study.notes": "குறிப்புகள்",
+  "study.videos": "வீடியோக்கள்",
+  "study.quiz": "வினாடி வினா",
+  "study.flashcards": "ஃப்ளாஷ்கார்டுகள்",
+  "study.timer": "கவன டைமர்",
+  
+  "ai.assistant": "AI உதவியாளர்",
+  "ai.ask_question": "ஒரு கேள்வி கேளுங்கள்...",
+  "ai.thinking": "சிந்திக்கிறது...",
+  "ai.cultural_context": "கலாச்சார ரீதியாக மாற்றியமைக்கப்பட்ட பதில்",
+  
+  "offline.mode": "ஆஃப்லைன் பயன்முறை",
+  "offline.available": "ஆஃப்லைனில் கிடைக்கும்",
+  "offline.sync": "ஆன்லைனில் இருக்கும்போது ஒத்திசைக்கவும்",
+  "offline.data_usage": "தரவு பயன்பாடு: {amount}",
+  
+  "settings.title": "அமைப்புகள்",
+  "settings.language": "மொழி",
+  "settings.region": "பகுதி",
+  "settings.board": "கல்வி வாரியம்",
+  "settings.grade": "வகுப்பு",
+  "settings.exams": "போட்டித் தேர்வுகள்",
+  "settings.offline": "ஆஃப்லைன் அமைப்புகள்",
+  "settings.notifications": "அறிவிப்புகள்",
+  "settings.privacy": "தனியுரிமை",
+  
+  "error.network": "நெட்வொர்க் இணைப்பு பிழை. உங்கள் இணைய இணைப்பைச் சரிபார்க்கவும்.",
+  "error.translation": "மொழிபெயர்ப்பு சேவை கிடைக்கவில்லை. ஆங்கிலத்தில் உள்ளடக்கம் காட்டப்படுகிறது.",
+  "error.voice": "இந்த உலாவியில் குரல் அங்கீகாரம் ஆதரிக்கப்படவில்லை.",
+  "error.cultural_filter": "கலாச்சார தழுவல் சேவை தற்காலிகமாக கிடைக்கவில்லை.",
+  
+  "success.profile_updated": "சுயவிவரம் வெற்றிகரமாக புதுப்பிக்கப்பட்டது",
+  "success.language_changed": "மொழி {language} க்கு மாற்றப்பட்டது",
+  "success.content_cached": "ஆஃப்லைன் பயன்பாட்டிற்காக உள்ளடக்கம் சேமிக்கப்பட்டது",
+  "success.progress_synced": "முன்னேற்றம் வெற்றிகரமாக ஒத்திசைக்கப்பட்டது"
 }

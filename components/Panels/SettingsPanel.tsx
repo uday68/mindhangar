@@ -79,6 +79,29 @@ export const SettingsPanel: React.FC = () => {
           ))}
         </div>
         <p className="text-[10px] text-gray-400 mt-2 px-1">Click to apply a new workspace arrangement. Windows will reset to default positions.</p>
+        
+        {/* Reset Everything Button */}
+        <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+          <div className="flex items-start gap-2 mb-2">
+            <Icons.AlertTriangle size={14} className="text-orange-600 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-xs font-bold text-orange-900">Having visibility issues?</p>
+              <p className="text-[10px] text-orange-700 mt-0.5">Clear all saved data and reset to factory defaults</p>
+            </div>
+          </div>
+          <button
+            onClick={() => {
+              if (confirm('This will clear all saved layouts, preferences, and reload the page. Continue?')) {
+                localStorage.clear();
+                window.location.reload();
+              }
+            }}
+            className="w-full py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-2"
+          >
+            <Icons.RotateCcw size={14} />
+            Reset Everything & Reload
+          </button>
+        </div>
       </section>
 
       {/* API Configuration */}

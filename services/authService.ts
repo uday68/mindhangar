@@ -7,6 +7,20 @@ import { User, AuthProvider } from '../types';
 
 const MOCK_DELAY = 1500;
 
+// Polyfill for crypto.randomUUID for older browsers
+function generateUUID(): string {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  
+  // Fallback UUID v4 generator
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
 const mockUsers: Record<string, Partial<User>> = {
   google: {
     name: 'Alex Student',
@@ -30,7 +44,7 @@ export const authService = {
     const mockUser = mockUsers[provider] || mockUsers['google'];
     
     return {
-      id: `${provider}_${crypto.randomUUID().slice(0, 8)}`,
+      id: `${provider}_${generateUUID().slice(0, 8)}`,
       name: mockUser.name!,
       email: mockUser.email!,
       avatar: mockUser.avatar!,
