@@ -7,6 +7,18 @@
 
 Built with **React 19**, **TypeScript**, and **Google Gemini API**, it leverages Large Language Models with cultural intelligence to act as a personalized academic coach for Indian students from urban metros to rural villages.
 
+---
+
+## 📚 Documentation
+
+**Complete documentation is available in the [`/docs`](./docs) folder.**
+
+- **New to the project?** Start with [`docs/START_HERE.md`](./docs/START_HERE.md)
+- **Quick reference?** Check [`docs/QUICK_REFERENCE.md`](./docs/QUICK_REFERENCE.md)
+- **Browse all docs:** See [`docs/INDEX.md`](./docs/INDEX.md) for the complete documentation index
+
+---
+
 ## 🇮🇳 **AI for Bharat Features**
 
 ### ✨ **Cultural Intelligence & Localization**

@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { PanelType, PanelState, Note, UserStats, Notification, AppSettings, FocusSession, User, Page, Block, BlockType, LearnerProfile, AuthProvider } from '../types';
 import { authService } from '../services/authService';
+import { dbQueries } from '../src/db/queries';
+import { errorService, ErrorCode } from '../src/services/ErrorService';
 
 // Polyfill for crypto.randomUUID
 function generateUUID(): string {
@@ -203,13 +205,34 @@ export const useStore = create<AppState>()(
         set({ user: null, showOnboarding: false, activePanels: createInitialPanels(), maximizedPanel: null });
       },
 
-      completeOnboarding: (profile) => set((state) => {
-        if (!state.user) return state;
-        return {
-          user: { ...state.user, profile },
-          showOnboarding: false
-        };
-      }),
+      completeOnboarding: async (profile) => {
+        const state = get();
+        if (!state.user) return;
+
+        try {
+          // Save profile to database
+          await dbQueries.learnerProfiles.create(state.user.id, profile);
+          
+          // Update user in database
+          await dbQueries.users.update(state.user.id, {
+            ...state.user,
+            profile,
+          });
+
+          // Update Zustand state
+          set((state) => ({
+            user: state.user ? { ...state.user, profile } : null,
+            showOnboarding: false,
+          }));
+        } catch (error) {
+          console.error('Failed to complete onboarding:', error);
+          // Fallback to localStorage
+          set((state) => ({
+            user: state.user ? { ...state.user, profile } : null,
+            showOnboarding: false,
+          }));
+        }
+      },
 
       upgradeToPro: () => set((state) => {
         if (!state.user) return state;
@@ -232,99 +255,309 @@ export const useStore = create<AppState>()(
       blocks: {},
       activePageId: null,
 
-      createPage: (parentId) => set((state) => {
-        const id = generateUUID();
-        const blockId = generateUUID();
-        return {
-          pages: {
-            ...state.pages,
-            [id]: {
-              id,
-              title: 'Untitled Page',
-              icon: '📄',
-              blockIds: [blockId],
-              parentId,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            }
-          },
-          blocks: {
-            ...state.blocks,
-            [blockId]: { id: blockId, type: 'text', content: '' }
-          },
-          activePageId: id
-        };
-      }),
+      createPage: async (parentId) => {
+        const state = get();
+        if (!state.user) {
+          console.warn('User not authenticated, creating page in memory only');
+          const id = generateUUID();
+          const blockId = generateUUID();
+          set({
+            pages: {
+              ...state.pages,
+              [id]: {
+                id,
+                title: 'Untitled Page',
+                icon: '📄',
+                blockIds: [blockId],
+                parentId,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+              }
+            },
+            blocks: {
+              ...state.blocks,
+              [blockId]: { id: blockId, type: 'text', content: '' }
+            },
+            activePageId: id
+          });
+          return;
+        }
+
+        try {
+          // Create in database
+          const page = await dbQueries.pages.create({
+            title: 'Untitled Page',
+            icon: '📄',
+            parentId,
+            userId: state.user.id,
+          });
+
+          // Create initial block
+          const block = await dbQueries.blocks.create({
+            type: 'text',
+            content: '',
+            pageId: page.id,
+          });
+
+          // Update Zustand state
+          set({
+            pages: {
+              ...state.pages,
+              [page.id]: {
+                id: page.id,
+                title: page.title,
+                icon: page.icon,
+                blockIds: [block.id],
+                parentId: page.parentId,
+                createdAt: page.createdAt,
+                updatedAt: page.updatedAt,
+              }
+            },
+            blocks: {
+              ...state.blocks,
+              [block.id]: { id: block.id, type: block.type, content: block.content }
+            },
+            activePageId: page.id,
+          });
+        } catch (error) {
+          console.error('Failed to create page:', error);
+          // Fallback to localStorage
+          const id = generateUUID();
+          const blockId = generateUUID();
+          set({
+            pages: {
+              ...state.pages,
+              [id]: {
+                id,
+                title: 'Untitled Page',
+                icon: '📄',
+                blockIds: [blockId],
+                parentId,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+              }
+            },
+            blocks: {
+              ...state.blocks,
+              [blockId]: { id: blockId, type: 'text', content: '' }
+            },
+            activePageId: id
+          });
+        }
+      },
 
       setActivePage: (id) => set({ activePageId: id }),
 
-      updatePageTitle: (id, title) => set((state) => ({
-        pages: {
-          ...state.pages,
-          [id]: { ...state.pages[id], title, updatedAt: new Date() }
+      updatePageTitle: async (id, title) => {
+        try {
+          await dbQueries.pages.update(id, { title });
+          set((state) => ({
+            pages: {
+              ...state.pages,
+              [id]: { ...state.pages[id], title, updatedAt: new Date() }
+            }
+          }));
+        } catch (error) {
+          console.error('Failed to update page:', error);
+          // Fallback to localStorage
+          set((state) => ({
+            pages: {
+              ...state.pages,
+              [id]: { ...state.pages[id], title, updatedAt: new Date() }
+            }
+          }));
         }
-      })),
+      },
 
-      deletePage: (id) => set((state) => {
-        const newPages = { ...state.pages };
-        delete newPages[id];
-        return { 
-          pages: newPages,
-          activePageId: state.activePageId === id ? Object.keys(newPages)[0] || null : state.activePageId 
-        };
-      }),
+      deletePage: async (id) => {
+        try {
+          await dbQueries.pages.delete(id);
+          set((state) => {
+            const newPages = { ...state.pages };
+            delete newPages[id];
+            return { 
+              pages: newPages,
+              activePageId: state.activePageId === id ? Object.keys(newPages)[0] || null : state.activePageId 
+            };
+          });
+        } catch (error) {
+          console.error('Failed to delete page:', error);
+          // Fallback to localStorage
+          set((state) => {
+            const newPages = { ...state.pages };
+            delete newPages[id];
+            return { 
+              pages: newPages,
+              activePageId: state.activePageId === id ? Object.keys(newPages)[0] || null : state.activePageId 
+            };
+          });
+        }
+      },
 
-      addBlock: (pageId, type, content = '', afterBlockId) => set((state) => {
-        const id = generateUUID();
-        const newBlock: Block = { id, type, content };
-        const page = state.pages[pageId];
-        if (!page) return state;
+      addBlock: async (pageId, type, content = '', afterBlockId) => {
+        const state = get();
+        if (!state.user) {
+          console.warn('User not authenticated, creating block in memory only');
+          const id = generateUUID();
+          const newBlock: Block = { id, type, content };
+          const page = state.pages[pageId];
+          if (!page) return;
 
-        const newBlockIds = [...page.blockIds];
-        if (afterBlockId) {
-          const idx = newBlockIds.indexOf(afterBlockId);
-          if (idx !== -1) newBlockIds.splice(idx + 1, 0, id);
-          else newBlockIds.push(id);
-        } else {
-          newBlockIds.push(id);
+          const newBlockIds = [...page.blockIds];
+          if (afterBlockId) {
+            const idx = newBlockIds.indexOf(afterBlockId);
+            if (idx !== -1) newBlockIds.splice(idx + 1, 0, id);
+            else newBlockIds.push(id);
+          } else {
+            newBlockIds.push(id);
+          }
+
+          set({
+            blocks: { ...state.blocks, [id]: newBlock },
+            pages: {
+              ...state.pages,
+              [pageId]: { ...page, blockIds: newBlockIds, updatedAt: new Date() }
+            }
+          });
+          return;
         }
 
-        return {
-          blocks: { ...state.blocks, [id]: newBlock },
-          pages: {
-            ...state.pages,
-            [pageId]: { ...page, blockIds: newBlockIds, updatedAt: new Date() }
-          }
-        };
-      }),
+        try {
+          const block = await dbQueries.blocks.create({
+            type,
+            content,
+            pageId,
+          });
 
-      updateBlock: (blockId, content, properties) => set((state) => ({
-        blocks: {
-          ...state.blocks,
-          [blockId]: { 
-            ...state.blocks[blockId], 
-            content, 
-            properties: { ...state.blocks[blockId].properties, ...properties } 
+          set((state) => {
+            const page = state.pages[pageId];
+            if (!page) return state;
+
+            const newBlockIds = [...page.blockIds];
+            if (afterBlockId) {
+              const idx = newBlockIds.indexOf(afterBlockId);
+              if (idx !== -1) newBlockIds.splice(idx + 1, 0, block.id);
+              else newBlockIds.push(block.id);
+            } else {
+              newBlockIds.push(block.id);
+            }
+
+            return {
+              blocks: {
+                ...state.blocks,
+                [block.id]: {
+                  id: block.id,
+                  type: block.type,
+                  content: block.content,
+                  properties: block.properties ? JSON.parse(block.properties) : undefined,
+                }
+              },
+              pages: {
+                ...state.pages,
+                [pageId]: {
+                  ...page,
+                  blockIds: newBlockIds,
+                  updatedAt: new Date(),
+                }
+              }
+            };
+          });
+        } catch (error) {
+          console.error('Failed to add block:', error);
+          // Fallback to localStorage
+          const id = generateUUID();
+          const newBlock: Block = { id, type, content };
+          const page = state.pages[pageId];
+          if (!page) return;
+
+          const newBlockIds = [...page.blockIds];
+          if (afterBlockId) {
+            const idx = newBlockIds.indexOf(afterBlockId);
+            if (idx !== -1) newBlockIds.splice(idx + 1, 0, id);
+            else newBlockIds.push(id);
+          } else {
+            newBlockIds.push(id);
           }
+
+          set({
+            blocks: { ...state.blocks, [id]: newBlock },
+            pages: {
+              ...state.pages,
+              [pageId]: { ...page, blockIds: newBlockIds, updatedAt: new Date() }
+            }
+          });
         }
-      })),
+      },
 
-      deleteBlock: (pageId, blockId) => set((state) => {
-        const page = state.pages[pageId];
-        if (!page) return state;
-        const newBlockIds = page.blockIds.filter(id => id !== blockId);
-        
-        const newBlocks = { ...state.blocks };
-        delete newBlocks[blockId];
+      updateBlock: async (blockId, content, properties) => {
+        try {
+          await dbQueries.blocks.update(blockId, { content, properties });
+          set((state) => ({
+            blocks: {
+              ...state.blocks,
+              [blockId]: { 
+                ...state.blocks[blockId], 
+                content, 
+                properties: { ...state.blocks[blockId].properties, ...properties } 
+              }
+            }
+          }));
+        } catch (error) {
+          console.error('Failed to update block:', error);
+          // Fallback to localStorage
+          set((state) => ({
+            blocks: {
+              ...state.blocks,
+              [blockId]: { 
+                ...state.blocks[blockId], 
+                content, 
+                properties: { ...state.blocks[blockId].properties, ...properties } 
+              }
+            }
+          }));
+        }
+      },
 
-        return {
-          blocks: newBlocks,
-          pages: {
-            ...state.pages,
-            [pageId]: { ...page, blockIds: newBlockIds, updatedAt: new Date() }
-          }
-        };
-      }),
+      deleteBlock: async (pageId, blockId) => {
+        try {
+          await dbQueries.blocks.delete(blockId);
+          set((state) => {
+            const page = state.pages[pageId];
+            if (!page) return state;
+            const newBlockIds = page.blockIds.filter(id => id !== blockId);
+            
+            const newBlocks = { ...state.blocks };
+            delete newBlocks[blockId];
+
+            return {
+              blocks: newBlocks,
+              pages: {
+                ...state.pages,
+                [pageId]: { ...page, blockIds: newBlockIds, updatedAt: new Date() }
+              }
+            };
+          });
+        } catch (error) {
+          console.error('Failed to delete block:', error);
+          // Fallback to localStorage
+          set((state) => {
+            const page = state.pages[pageId];
+            if (!page) return state;
+            const newBlockIds = page.blockIds.filter(id => id !== blockId);
+            
+            const newBlocks = { ...state.blocks };
+            delete newBlocks[blockId];
+
+            return {
+              blocks: newBlocks,
+              pages: {
+                ...state.pages,
+                [pageId]: { ...page, blockIds: newBlockIds, updatedAt: new Date() }
+              }
+            };
+          });
+        }
+      },
 
       // AI Context Sharing
       currentTranscript: '',
@@ -441,12 +674,48 @@ export const useStore = create<AppState>()(
         const level = Math.floor(currentXp / 100) + 1;
         return { userStats: { ...state.userStats, xp: currentXp, level } };
       }),
-      addNotification: (n) => set((state) => ({
-        notifications: [{ id: generateUUID(), timestamp: new Date(), read: false, ...n }, ...state.notifications]
-      })),
+      addNotification: async (n) => {
+        const state = get();
+        if (!state.user) {
+          // Fallback to localStorage for unauthenticated users
+          set((state) => ({
+            notifications: [{ id: generateUUID(), timestamp: new Date(), read: false, ...n }, ...state.notifications]
+          }));
+          return;
+        }
+
+        try {
+          const created = await dbQueries.notifications.create(state.user.id, n);
+          set((state) => ({
+            notifications: [created, ...state.notifications]
+          }));
+        } catch (error) {
+          console.error('Failed to add notification:', error);
+          // Fallback to localStorage
+          set((state) => ({
+            notifications: [{ id: generateUUID(), timestamp: new Date(), read: false, ...n }, ...state.notifications]
+          }));
+        }
+      },
       markRead: (id) => set((state) => ({ notifications: state.notifications.map(n => n.id === id ? { ...n, read: true } : n) })),
       clearNotifications: () => set({ notifications: [] }),
-      updateSettings: (s) => set((state) => ({ settings: { ...state.settings, ...s } })),
+      updateSettings: async (s) => {
+        const state = get();
+        if (!state.user) {
+          // Fallback to localStorage for unauthenticated users
+          set((state) => ({ settings: { ...state.settings, ...s } }));
+          return;
+        }
+
+        try {
+          await dbQueries.settings.upsert(state.user.id, s);
+          set((state) => ({ settings: { ...state.settings, ...s } }));
+        } catch (error) {
+          console.error('Failed to update settings:', error);
+          // Fallback to localStorage
+          set((state) => ({ settings: { ...state.settings, ...s } }));
+        }
+      },
 
       // Marketing State
       marketingMode: false,

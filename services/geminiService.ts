@@ -8,6 +8,7 @@
 
 import { aiAssistant } from '../src/services/AIAssistantService';
 import { hfAI } from '../src/services/HuggingFaceAIService';
+import { errorService, ErrorCode } from '../src/services/ErrorService';
 import { QuizQuestion, Flashcard, SearchResult, LearningRoadmap } from '../types';
 
 /**
@@ -40,8 +41,9 @@ export async function createChatSession(systemPrompt?: string) {
         });
         return response.text;
       } catch (error) {
-        console.error('Chat error:', error);
-        return 'Sorry, I encountered an error. Please try again.';
+        const appError = errorService.handleAIError(error, 'gemini');
+        console.error('Chat error:', appError);
+        return appError.userMessage;
       }
     }
   };
@@ -62,8 +64,9 @@ export async function summarizeContent(content: string, type: 'video' | 'article
     
     return response.text;
   } catch (error) {
-    console.error('Summarization error:', error);
-    return 'Unable to generate summary. Please try again.';
+    const appError = errorService.handleAIError(error, 'gemini');
+    console.error('Summarization error:', appError);
+    return appError.userMessage;
   }
 }
 
@@ -97,7 +100,8 @@ export async function performSemanticSearch(query: string, context: string): Pro
       }];
     }
   } catch (error) {
-    console.error('Search error:', error);
+    const appError = errorService.handleAIError(error, 'gemini');
+    console.error('Search error:', appError);
     return [];
   }
 }
@@ -129,7 +133,8 @@ Use Indian educational context and examples.`;
       return [];
     }
   } catch (error) {
-    console.error('Quiz generation error:', error);
+    const appError = errorService.handleAIError(error, 'gemini');
+    console.error('Quiz generation error:', appError);
     return [];
   }
 }

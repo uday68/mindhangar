@@ -12,6 +12,7 @@
 
 import { testConnection } from '../../services/geminiService';
 import { hfAI } from './HuggingFaceAIService';
+import { errorService, ErrorCode } from './ErrorService';
 
 interface AIRequest {
   prompt: string;
@@ -153,7 +154,10 @@ Now respond to: ${prompt}
       });
 
       if (!response.ok) {
-        throw new Error(`API request failed: ${response.statusText}`);
+        throw errorService.handleAPIError(
+          { response: { status: response.status } },
+          this.baseURL
+        );
       }
 
       const data = await response.json();
@@ -164,10 +168,11 @@ Now respond to: ${prompt}
         confidence: 0.9
       };
     } catch (error) {
-      console.error('AI generation error:', error);
+      const appError = errorService.handleAIError(error, 'gemini');
+      console.error('AI generation error:', appError);
       return {
         text: '',
-        error: error instanceof Error ? error.message : 'Unknown error occurred'
+        error: appError.userMessage
       };
     }
   }

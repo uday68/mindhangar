@@ -11,6 +11,7 @@
  */
 
 import { pipeline } from '@xenova/transformers';
+import { errorService, ErrorCode } from './ErrorService';
 
 interface HFAIRequest {
   prompt: string;
@@ -80,7 +81,7 @@ class HuggingFaceAIService {
     } catch (error) {
       console.error('❌ Failed to load AI models:', error);
       this.isLoading = false;
-      return false;
+      throw errorService.handleAIError(error, 'huggingface');
     }
   }
 
@@ -130,10 +131,11 @@ class HuggingFaceAIService {
         confidence: 0.8
       };
     } catch (error) {
-      console.error('Text generation error:', error);
+      const appError = errorService.handleAIError(error, 'huggingface');
+      console.error('Text generation error:', appError);
       return {
         text: '',
-        error: error instanceof Error ? error.message : 'Generation failed'
+        error: appError.userMessage
       };
     }
   }
@@ -157,10 +159,11 @@ class HuggingFaceAIService {
         confidence: result.score
       };
     } catch (error) {
-      console.error('Question answering error:', error);
+      const appError = errorService.handleAIError(error, 'huggingface');
+      console.error('Question answering error:', appError);
       return {
         text: '',
-        error: error instanceof Error ? error.message : 'Failed to answer question'
+        error: appError.userMessage
       };
     }
   }

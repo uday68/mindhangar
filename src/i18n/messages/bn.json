@@ -1,6 +1,7 @@
 {
   "app.name": "মাইন্ডহ্যাঙ্গার AI ভারতের জন্য",
   "app.tagline": "প্রতিটি ভারতীয় ছাত্রের জন্য AI-চালিত শিক্ষা",
+  
   "common.welcome": "স্বাগতম",
   "common.hello": "নমস্কার",
   "common.loading": "লোড হচ্ছে...",
@@ -19,5 +20,85 @@
   "common.search": "অনুসন্ধান করুন",
   "common.filter": "ফিল্টার",
   "common.sort": "সাজান",
-  "common.refresh": "রিফ্রেশ করুন"
+  "common.refresh": "রিফ্রেশ করুন",
+  
+  "language.select": "ভাষা নির্বাচন করুন",
+  "language.current": "বর্তমান ভাষা",
+  "language.change": "ভাষা পরিবর্তন করুন",
+  
+  "onboarding.title": "মাইন্ডহ্যাঙ্গার AI ভারতে স্বাগতম",
+  "onboarding.subtitle": "আসুন আপনার শেখার অভিজ্ঞতা ব্যক্তিগতকৃত করি",
+  "onboarding.language.title": "আপনার পছন্দের ভাষা চয়ন করুন",
+  "onboarding.language.subtitle": "আপনি যে ভাষায় সবচেয়ে স্বাচ্ছন্দ্য বোধ করেন তা নির্বাচন করুন",
+  "onboarding.board.title": "আপনার শিক্ষা বোর্ড নির্বাচন করুন",
+  "onboarding.board.subtitle": "এটি আমাদের আপনার পাঠ্যক্রমের জন্য বিষয়বস্তু কাস্টমাইজ করতে সাহায্য করে",
+  "onboarding.grade.title": "আপনার বর্তমান গ্রেড/ক্লাস কী?",
+  "onboarding.grade.subtitle": "আমরা বয়স-উপযুক্ত বিষয়বস্তু দেখাব",
+  "onboarding.exams.title": "প্রতিযোগিতামূলক পরীক্ষার লক্ষ্য",
+  "onboarding.exams.subtitle": "আপনি যে পরীক্ষার জন্য প্রস্তুতি নিচ্ছেন তা নির্বাচন করুন (ঐচ্ছিক)",
+  "onboarding.region.title": "আপনার অঞ্চল",
+  "onboarding.region.subtitle": "এটি আমাদের সাংস্কৃতিকভাবে প্রাসঙ্গিক বিষয়বস্তু প্রদান করতে সাহায্য করে",
+  
+  "board.cbse": "CBSE",
+  "board.icse": "ICSE",
+  "board.state": "রাজ্য বোর্ড",
+  "board.other": "অন্যান্য",
+  
+  "exam.jee": "JEE Main/Advanced",
+  "exam.neet": "NEET",
+  "exam.upsc": "UPSC",
+  "exam.cat": "CAT",
+  "exam.gate": "GATE",
+  "exam.none": "কোনোটিই নয়",
+  
+  "region.north": "উত্তর ভারত",
+  "region.south": "দক্ষিণ ভারত",
+  "region.west": "পশ্চিম ভারত",
+  "region.east": "পূর্ব ভারত",
+  "region.northeast": "উত্তর-পূর্ব ভারত",
+  "region.central": "মধ্য ভারত",
+  
+  "dashboard.title": "ড্যাশবোর্ড",
+  "dashboard.welcome": "আবার স্বাগতম, {name}!",
+  "dashboard.continue_learning": "শেখা চালিয়ে যান",
+  "dashboard.study_plan": "অধ্যয়ন পরিকল্পনা",
+  "dashboard.progress": "অগ্রগতি",
+  "dashboard.achievements": "অর্জন",
+  
+  "study.planner": "অধ্যয়ন পরিকল্পক",
+  "study.notes": "নোট",
+  "study.videos": "ভিডিও",
+  "study.quiz": "কুইজ",
+  "study.flashcards": "ফ্ল্যাশকার্ড",
+  "study.timer": "ফোকাস টাইমার",
+  
+  "ai.assistant": "AI সহায়ক",
+  "ai.ask_question": "একটি প্রশ্ন জিজ্ঞাসা করুন...",
+  "ai.thinking": "চিন্তা করছি...",
+  "ai.cultural_context": "সাংস্কৃতিকভাবে অভিযোজিত প্রতিক্রিয়া",
+  
+  "offline.mode": "অফলাইন মোড",
+  "offline.available": "অফলাইনে উপলব্ধ",
+  "offline.sync": "অনলাইনে থাকলে সিঙ্ক করুন",
+  "offline.data_usage": "ডেটা ব্যবহার: {amount}",
+  
+  "settings.title": "সেটিংস",
+  "settings.language": "ভাষা",
+  "settings.region": "অঞ্চল",
+  "settings.board": "শিক্ষা বোর্ড",
+  "settings.grade": "গ্রেড/ক্লাস",
+  "settings.exams": "প্রতিযোগিতামূলক পরীক্ষা",
+  "settings.offline": "অফলাইন সেটিংস",
+  "settings.notifications": "বিজ্ঞপ্তি",
+  "settings.privacy": "গোপনীয়তা",
+  
+  "error.network": "নেটওয়ার্ক সংযোগ ত্রুটি। অনুগ্রহ করে আপনার ইন্টারনেট সংযোগ পরীক্ষা করুন।",
+  "error.translation": "অনুবাদ পরিষেবা অনুপলব্ধ। ইংরেজিতে বিষয়বস্তু দেখানো হচ্ছে।",
+  "error.voice": "এই ব্রাউজারে ভয়েস রিকগনিশন সমর্থিত নয়।",
+  "error.cultural_filter": "সাংস্কৃতিক অভিযোজন পরিষেবা সাময়িকভাবে অনুপলব্ধ।",
+  
+  "success.profile_updated": "প্রোফাইল সফলভাবে আপডেট হয়েছে",
+  "success.language_changed": "ভাষা {language} এ পরিবর্তিত হয়েছে",
+  "success.content_cached": "অফলাইন ব্যবহারের জন্য বিষয়বস্তু সংরক্ষিত হয়েছে",
+  "success.progress_synced": "অগ্রগতি সফলভাবে সিঙ্ক্রোনাইজ হয়েছে"
 }

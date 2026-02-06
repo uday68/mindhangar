@@ -1,6 +1,7 @@
 {
   "app.name": "मइंडहॅंगर AI भारतासाठी",
   "app.tagline": "प्रत्येक भारतीय विद्यार्थ्यासाठी AI-चालित शिक्षण",
+  
   "common.welcome": "स्वागत",
   "common.hello": "नमस्कार",
   "common.loading": "लोड होत आहे...",
@@ -19,5 +20,85 @@
   "common.search": "शोधा",
   "common.filter": "फिल्टर",
   "common.sort": "क्रमवारी लावा",
-  "common.refresh": "रिफ्रेश करा"
+  "common.refresh": "रिफ्रेश करा",
+  
+  "language.select": "भाषा निवडा",
+  "language.current": "सध्याची भाषा",
+  "language.change": "भाषा बदला",
+  
+  "onboarding.title": "मइंडहॅंगर AI भारतात आपले स्वागत आहे",
+  "onboarding.subtitle": "चला आपला शिकण्याचा अनुभव वैयक्तिकृत करूया",
+  "onboarding.language.title": "आपली पसंतीची भाषा निवडा",
+  "onboarding.language.subtitle": "आपण ज्या भाषेत सर्वात सोयीस्कर आहात ती निवडा",
+  "onboarding.board.title": "आपला शैक्षणिक बोर्ड निवडा",
+  "onboarding.board.subtitle": "हे आम्हाला आपल्या अभ्यासक्रमासाठी सामग्री सानुकूलित करण्यास मदत करते",
+  "onboarding.grade.title": "आपला सध्याचा इयत्ता/वर्ग काय आहे?",
+  "onboarding.grade.subtitle": "आम्ही वय-योग्य सामग्री दाखवू",
+  "onboarding.exams.title": "स्पर्धात्मक परीक्षा उद्दिष्टे",
+  "onboarding.exams.subtitle": "आपण ज्या परीक्षांसाठी तयारी करत आहात त्या निवडा (पर्यायी)",
+  "onboarding.region.title": "आपला प्रदेश",
+  "onboarding.region.subtitle": "हे आम्हाला सांस्कृतिकदृष्ट्या संबंधित सामग्री प्रदान करण्यास मदत करते",
+  
+  "board.cbse": "CBSE",
+  "board.icse": "ICSE",
+  "board.state": "राज्य बोर्ड",
+  "board.other": "इतर",
+  
+  "exam.jee": "JEE Main/Advanced",
+  "exam.neet": "NEET",
+  "exam.upsc": "UPSC",
+  "exam.cat": "CAT",
+  "exam.gate": "GATE",
+  "exam.none": "काहीही नाही",
+  
+  "region.north": "उत्तर भारत",
+  "region.south": "दक्षिण भारत",
+  "region.west": "पश्चिम भारत",
+  "region.east": "पूर्व भारत",
+  "region.northeast": "ईशान्य भारत",
+  "region.central": "मध्य भारत",
+  
+  "dashboard.title": "डॅशबोर्ड",
+  "dashboard.welcome": "परत स्वागत आहे, {name}!",
+  "dashboard.continue_learning": "शिकणे सुरू ठेवा",
+  "dashboard.study_plan": "अभ्यास योजना",
+  "dashboard.progress": "प्रगती",
+  "dashboard.achievements": "उपलब्धी",
+  
+  "study.planner": "अभ्यास नियोजक",
+  "study.notes": "नोट्स",
+  "study.videos": "व्हिडिओ",
+  "study.quiz": "क्विझ",
+  "study.flashcards": "फ्लॅशकार्ड",
+  "study.timer": "फोकस टाइमर",
+  
+  "ai.assistant": "AI सहाय्यक",
+  "ai.ask_question": "प्रश्न विचारा...",
+  "ai.thinking": "विचार करत आहे...",
+  "ai.cultural_context": "सांस्कृतिकदृष्ट्या अनुकूलित प्रतिसाद",
+  
+  "offline.mode": "ऑफलाइन मोड",
+  "offline.available": "ऑफलाइन उपलब्ध",
+  "offline.sync": "ऑनलाइन असताना सिंक करा",
+  "offline.data_usage": "डेटा वापर: {amount}",
+  
+  "settings.title": "सेटिंग्ज",
+  "settings.language": "भाषा",
+  "settings.region": "प्रदेश",
+  "settings.board": "शैक्षणिक बोर्ड",
+  "settings.grade": "इयत्ता/वर्ग",
+  "settings.exams": "स्पर्धात्मक परीक्षा",
+  "settings.offline": "ऑफलाइन सेटिंग्ज",
+  "settings.notifications": "सूचना",
+  "settings.privacy": "गोपनीयता",
+  
+  "error.network": "नेटवर्क कनेक्शन त्रुटी. कृपया आपले इंटरनेट कनेक्शन तपासा.",
+  "error.translation": "भाषांतर सेवा अनुपलब्ध. इंग्रजीमध्ये सामग्री दाखवत आहे.",
+  "error.voice": "या ब्राउझरमध्ये व्हॉइस रेकग्निशन समर्थित नाही.",
+  "error.cultural_filter": "सांस्कृतिक अनुकूलन सेवा तात्पुरती अनुपलब्ध.",
+  
+  "success.profile_updated": "प्रोफाइल यशस्वीरित्या अपडेट केले",
+  "success.language_changed": "भाषा {language} मध्ये बदलली",
+  "success.content_cached": "ऑफलाइन वापरासाठी सामग्री जतन केली",
+  "success.progress_synced": "प्रगती यशस्वीरित्या सिंक्रोनाइझ केली"
 }

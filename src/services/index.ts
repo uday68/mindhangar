@@ -24,6 +24,23 @@ export { offlineSyncService } from './OfflineSyncService';
 export { bandwidthOptimizer } from './BandwidthOptimizer';
 export { languageEngine } from './LanguageEngine';
 export { culturalFilter } from './CulturalFilter';
+export { curriculumAdapter } from './CurriculumAdapter';
+export { examPreparationService } from './ExamPreparationService';
+export type { 
+  EducationalBoard, 
+  CompetitiveExam, 
+  Subject, 
+  Syllabus, 
+  ExamMapping, 
+  StudyPlan 
+} from './CurriculumAdapter';
+export type {
+  ExamQuestion,
+  MockTest,
+  MockTestResult,
+  StudyRecommendation,
+  PerformanceAnalytics
+} from './ExamPreparationService';
 
 // Database
 export { db, DatabaseManager, initializeDatabase } from '../db';

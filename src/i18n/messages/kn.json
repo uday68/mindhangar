@@ -1,6 +1,7 @@
 {
   "app.name": "ಮೈಂಡ್‌ಹ್ಯಾಂಗರ್ AI ಭಾರತಕ್ಕಾಗಿ",
   "app.tagline": "ಪ್ರತಿ ಭಾರತೀಯ ವಿದ್ಯಾರ್ಥಿಗೆ AI-ಚಾಲಿತ ಶಿಕ್ಷಣ",
+  
   "common.welcome": "ಸ್ವಾಗತ",
   "common.hello": "ನಮಸ್ಕಾರ",
   "common.loading": "ಲೋಡ್ ಆಗುತ್ತಿದೆ...",
@@ -19,5 +20,85 @@
   "common.search": "ಹುಡುಕಿ",
   "common.filter": "ಫಿಲ್ಟರ್",
   "common.sort": "ವಿಂಗಡಿಸಿ",
-  "common.refresh": "ರಿಫ್ರೆಶ್ ಮಾಡಿ"
+  "common.refresh": "ರಿಫ್ರೆಶ್ ಮಾಡಿ",
+  
+  "language.select": "ಭಾಷೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+  "language.current": "ಪ್ರಸ್ತುತ ಭಾಷೆ",
+  "language.change": "ಭಾಷೆಯನ್ನು ಬದಲಾಯಿಸಿ",
+  
+  "onboarding.title": "ಮೈಂಡ್‌ಹ್ಯಾಂಗರ್ AI ಭಾರತಕ್ಕೆ ಸ್ವಾಗತ",
+  "onboarding.subtitle": "ನಿಮ್ಮ ಕಲಿಕೆಯ ಅನುಭವವನ್ನು ವೈಯಕ್ತೀಕರಿಸೋಣ",
+  "onboarding.language.title": "ನಿಮ್ಮ ಆದ್ಯತೆಯ ಭಾಷೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+  "onboarding.language.subtitle": "ನೀವು ಹೆಚ್ಚು ಆರಾಮದಾಯಕವಾಗಿರುವ ಭಾಷೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+  "onboarding.board.title": "ನಿಮ್ಮ ಶೈಕ್ಷಣಿಕ ಮಂಡಳಿಯನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+  "onboarding.board.subtitle": "ಇದು ನಿಮ್ಮ ಪಠ್ಯಕ್ರಮಕ್ಕಾಗಿ ವಿಷಯವನ್ನು ಕಸ್ಟಮೈಸ್ ಮಾಡಲು ನಮಗೆ ಸಹಾಯ ಮಾಡುತ್ತದೆ",
+  "onboarding.grade.title": "ನಿಮ್ಮ ಪ್ರಸ್ತುತ ತರಗತಿ/ವರ್ಗ ಯಾವುದು?",
+  "onboarding.grade.subtitle": "ನಾವು ವಯಸ್ಸಿಗೆ ಸೂಕ್ತವಾದ ವಿಷಯವನ್ನು ತೋರಿಸುತ್ತೇವೆ",
+  "onboarding.exams.title": "ಸ್ಪರ್ಧಾತ್ಮಕ ಪರೀಕ್ಷೆಯ ಗುರಿಗಳು",
+  "onboarding.exams.subtitle": "ನೀವು ತಯಾರಿ ನಡೆಸುತ್ತಿರುವ ಪರೀಕ್ಷೆಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ (ಐಚ್ಛಿಕ)",
+  "onboarding.region.title": "ನಿಮ್ಮ ಪ್ರದೇಶ",
+  "onboarding.region.subtitle": "ಇದು ಸಾಂಸ್ಕೃತಿಕವಾಗಿ ಸಂಬಂಧಿತ ವಿಷಯವನ್ನು ಒದಗಿಸಲು ನಮಗೆ ಸಹಾಯ ಮಾಡುತ್ತದೆ",
+  
+  "board.cbse": "CBSE",
+  "board.icse": "ICSE",
+  "board.state": "ರಾಜ್ಯ ಮಂಡಳಿ",
+  "board.other": "ಇತರೆ",
+  
+  "exam.jee": "JEE Main/Advanced",
+  "exam.neet": "NEET",
+  "exam.upsc": "UPSC",
+  "exam.cat": "CAT",
+  "exam.gate": "GATE",
+  "exam.none": "ಯಾವುದೂ ಇಲ್ಲ",
+  
+  "region.north": "ಉತ್ತರ ಭಾರತ",
+  "region.south": "ದಕ್ಷಿಣ ಭಾರತ",
+  "region.west": "ಪಶ್ಚಿಮ ಭಾರತ",
+  "region.east": "ಪೂರ್ವ ಭಾರತ",
+  "region.northeast": "ಈಶಾನ್ಯ ಭಾರತ",
+  "region.central": "ಮಧ್ಯ ಭಾರತ",
+  
+  "dashboard.title": "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್",
+  "dashboard.welcome": "ಮತ್ತೆ ಸ್ವಾಗತ, {name}!",
+  "dashboard.continue_learning": "ಕಲಿಕೆಯನ್ನು ಮುಂದುವರಿಸಿ",
+  "dashboard.study_plan": "ಅಧ್ಯಯನ ಯೋಜನೆ",
+  "dashboard.progress": "ಪ್ರಗತಿ",
+  "dashboard.achievements": "ಸಾಧನೆಗಳು",
+  
+  "study.planner": "ಅಧ್ಯಯನ ಯೋಜಕ",
+  "study.notes": "ಟಿಪ್ಪಣಿಗಳು",
+  "study.videos": "ವೀಡಿಯೊಗಳು",
+  "study.quiz": "ಕ್ವಿಜ್",
+  "study.flashcards": "ಫ್ಲ್ಯಾಶ್‌ಕಾರ್ಡ್‌ಗಳು",
+  "study.timer": "ಫೋಕಸ್ ಟೈಮರ್",
+  
+  "ai.assistant": "AI ಸಹಾಯಕ",
+  "ai.ask_question": "ಪ್ರಶ್ನೆಯನ್ನು ಕೇಳಿ...",
+  "ai.thinking": "ಯೋಚಿಸುತ್ತಿದೆ...",
+  "ai.cultural_context": "ಸಾಂಸ್ಕೃತಿಕವಾಗಿ ಹೊಂದಿಕೊಂಡ ಪ್ರತಿಕ್ರಿಯೆ",
+  
+  "offline.mode": "ಆಫ್‌ಲೈನ್ ಮೋಡ್",
+  "offline.available": "ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿ ಲಭ್ಯವಿದೆ",
+  "offline.sync": "ಆನ್‌ಲೈನ್ ಆದಾಗ ಸಿಂಕ್ ಮಾಡಿ",
+  "offline.data_usage": "ಡೇಟಾ ಬಳಕೆ: {amount}",
+  
+  "settings.title": "ಸೆಟ್ಟಿಂಗ್‌ಗಳು",
+  "settings.language": "ಭಾಷೆ",
+  "settings.region": "ಪ್ರದೇಶ",
+  "settings.board": "ಶೈಕ್ಷಣಿಕ ಮಂಡಳಿ",
+  "settings.grade": "ತರಗತಿ/ವರ್ಗ",
+  "settings.exams": "ಸ್ಪರ್ಧಾತ್ಮಕ ಪರೀಕ್ಷೆಗಳು",
+  "settings.offline": "ಆಫ್‌ಲೈನ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು",
+  "settings.notifications": "ಅಧಿಸೂಚನೆಗಳು",
+  "settings.privacy": "ಗೌಪ್ಯತೆ",
+  
+  "error.network": "ನೆಟ್‌ವರ್ಕ್ ಸಂಪರ್ಕ ದೋಷ. ದಯವಿಟ್ಟು ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕವನ್ನು ಪರಿಶೀಲಿಸಿ.",
+  "error.translation": "ಅನುವಾದ ಸೇವೆ ಲಭ್ಯವಿಲ್ಲ. ಇಂಗ್ಲಿಷ್‌ನಲ್ಲಿ ವಿಷಯವನ್ನು ತೋರಿಸಲಾಗುತ್ತಿದೆ.",
+  "error.voice": "ಈ ಬ್ರೌಸರ್‌ನಲ್ಲಿ ಧ್ವನಿ ಗುರುತಿಸುವಿಕೆ ಬೆಂಬಲಿತವಾಗಿಲ್ಲ.",
+  "error.cultural_filter": "ಸಾಂಸ್ಕೃತಿಕ ಹೊಂದಾಣಿಕೆ ಸೇವೆ ತಾತ್ಕಾಲಿಕವಾಗಿ ಲಭ್ಯವಿಲ್ಲ.",
+  
+  "success.profile_updated": "ಪ್ರೊಫೈಲ್ ಯಶಸ್ವಿಯಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ",
+  "success.language_changed": "ಭಾಷೆಯನ್ನು {language} ಗೆ ಬದಲಾಯಿಸಲಾಗಿದೆ",
+  "success.content_cached": "ಆಫ್‌ಲೈನ್ ಬಳಕೆಗಾಗಿ ವಿಷಯವನ್ನು ಉಳಿಸಲಾಗಿದೆ",
+  "success.progress_synced": "ಪ್ರಗತಿಯನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಸಿಂಕ್ರೊನೈಸ್ ಮಾಡಲಾಗಿದೆ"
 }

@@ -1,6 +1,7 @@
 {
   "app.name": "માઇન્ડહેંગર AI ભારત માટે",
   "app.tagline": "દરેક ભારતીય વિદ્યાર્થી માટે AI-સંચાલિત શિક્ષણ",
+  
   "common.welcome": "સ્વાગત",
   "common.hello": "નમસ્તે",
   "common.loading": "લોડ થઈ રહ્યું છે...",
@@ -19,5 +20,85 @@
   "common.search": "શોધો",
   "common.filter": "ફિલ્ટર",
   "common.sort": "ક્રમમાં ગોઠવો",
-  "common.refresh": "રિફ્રેશ કરો"
+  "common.refresh": "રિફ્રેશ કરો",
+  
+  "language.select": "ભાષા પસંદ કરો",
+  "language.current": "વર્તમાન ભાષા",
+  "language.change": "ભાષા બદલો",
+  
+  "onboarding.title": "માઇન્ડહેંગર AI ભારતમાં આપનું સ્વાગત છે",
+  "onboarding.subtitle": "ચાલો આપના શીખવાના અનુભવને વ્યક્તિગત બનાવીએ",
+  "onboarding.language.title": "આપની પસંદગીની ભાષા પસંદ કરો",
+  "onboarding.language.subtitle": "તમે જે ભાષામાં સૌથી વધુ આરામદાયક છો તે પસંદ કરો",
+  "onboarding.board.title": "આપનું શૈક્ષણિક બોર્ડ પસંદ કરો",
+  "onboarding.board.subtitle": "આ અમને તમારા અભ્યાસક્રમ માટે સામગ્રીને કસ્ટમાઇઝ કરવામાં મદદ કરે છે",
+  "onboarding.grade.title": "તમારો વર્તમાન ધોરણ/વર્ગ શું છે?",
+  "onboarding.grade.subtitle": "અમે વય-યોગ્ય સામગ્રી બતાવીશું",
+  "onboarding.exams.title": "સ્પર્ધાત્મક પરીક્ષા લક્ષ્યો",
+  "onboarding.exams.subtitle": "તમે જે પરીક્ષાઓ માટે તૈયારી કરી રહ્યા છો તે પસંદ કરો (વૈકલ્પિક)",
+  "onboarding.region.title": "તમારો પ્રદેશ",
+  "onboarding.region.subtitle": "આ અમને સાંસ્કૃતિક રીતે સંબંધિત સામગ્રી પ્રદાન કરવામાં મદદ કરે છે",
+  
+  "board.cbse": "CBSE",
+  "board.icse": "ICSE",
+  "board.state": "રાજ્ય બોર્ડ",
+  "board.other": "અન્ય",
+  
+  "exam.jee": "JEE Main/Advanced",
+  "exam.neet": "NEET",
+  "exam.upsc": "UPSC",
+  "exam.cat": "CAT",
+  "exam.gate": "GATE",
+  "exam.none": "કોઈ નહીં",
+  
+  "region.north": "ઉત્તર ભારત",
+  "region.south": "દક્ષિણ ભારત",
+  "region.west": "પશ્ચિમ ભારત",
+  "region.east": "પૂર્વ ભારત",
+  "region.northeast": "ઉત્તરપૂર્વ ભારત",
+  "region.central": "મધ્ય ભારત",
+  
+  "dashboard.title": "ડેશબોર્ડ",
+  "dashboard.welcome": "પાછા સ્વાગત છે, {name}!",
+  "dashboard.continue_learning": "શીખવાનું ચાલુ રાખો",
+  "dashboard.study_plan": "અભ્યાસ યોજના",
+  "dashboard.progress": "પ્રગતિ",
+  "dashboard.achievements": "સિદ્ધિઓ",
+  
+  "study.planner": "અભ્યાસ આયોજક",
+  "study.notes": "નોંધો",
+  "study.videos": "વિડિઓઝ",
+  "study.quiz": "ક્વિઝ",
+  "study.flashcards": "ફ્લેશકાર્ડ્સ",
+  "study.timer": "ફોકસ ટાઇમર",
+  
+  "ai.assistant": "AI સહાયક",
+  "ai.ask_question": "પ્રશ્ન પૂછો...",
+  "ai.thinking": "વિચારી રહ્યું છે...",
+  "ai.cultural_context": "સાંસ્કૃતિક રીતે અનુકૂલિત પ્રતિસાદ",
+  
+  "offline.mode": "ઓફલાઇન મોડ",
+  "offline.available": "ઓફલાઇન ઉપલબ્ધ",
+  "offline.sync": "ઓનલાઇન હોય ત્યારે સિંક કરો",
+  "offline.data_usage": "ડેટા વપરાશ: {amount}",
+  
+  "settings.title": "સેટિંગ્સ",
+  "settings.language": "ભાષા",
+  "settings.region": "પ્રદેશ",
+  "settings.board": "શૈક્ષણિક બોર્ડ",
+  "settings.grade": "ધોરણ/વર્ગ",
+  "settings.exams": "સ્પર્ધાત્મક પરીક્ષાઓ",
+  "settings.offline": "ઓફલાઇન સેટિંગ્સ",
+  "settings.notifications": "સૂચનાઓ",
+  "settings.privacy": "ગોપનીયતા",
+  
+  "error.network": "નેટવર્ક કનેક્શન ભૂલ. કૃપા કરીને તમારું ઇન્ટરનેટ કનેક્શન તપાસો.",
+  "error.translation": "અનુવાદ સેવા અનુપલબ્ધ. અંગ્રેજીમાં સામગ્રી બતાવી રહ્યા છીએ.",
+  "error.voice": "આ બ્રાઉઝરમાં વૉઇસ રેકગ્નિશન સપોર્ટેડ નથી.",
+  "error.cultural_filter": "સાંસ્કૃતિક અનુકૂલન સેવા અસ્થાયી રૂપે અનુપલબ્ધ.",
+  
+  "success.profile_updated": "પ્રોફાઇલ સફળતાપૂર્વક અપડેટ થઈ",
+  "success.language_changed": "ભાષા {language} માં બદલાઈ",
+  "success.content_cached": "ઓફલાઇન ઉપયોગ માટે સામગ્રી સાચવી",
+  "success.progress_synced": "પ્રગતિ સફળતાપૂર્વક સિંક્રોનાઇઝ થઈ"
 }

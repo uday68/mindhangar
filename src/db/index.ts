@@ -2,15 +2,49 @@ import { drizzle } from 'drizzle-orm/better-sqlite3';
 import { eq } from 'drizzle-orm';
 import Database from 'better-sqlite3';
 import * as schema from './schema';
+import { errorService, ErrorCode } from '../services/ErrorService';
+
+let sqlite: Database.Database;
+let dbs: ReturnType<typeof drizzle>;
 
 // Initialize SQLite database
-const sqlite = new Database('mindhangar-bharat.db');
+function initializeDB() {
+  try {
+    if (!sqlite) {
+      sqlite = new Database('mindhangar-bharat.db');
+      // Enable WAL mode for better performance
+      sqlite.pragma('journal_mode = WAL');
+      dbs = drizzle(sqlite, { schema });
+      console.log('✅ Database initialized');
+    }
+    return db;
+  } catch (error) {
+    console.error('❌ Database initialization failed:', error);
+    throw errorService.createError(
+      ErrorCode.DATABASE_ERROR,
+      'Failed to initialize database',
+      'Unable to connect to the database. Please try restarting the application.',
+      error,
+      false
+    );
+  }
+}
 
-// Enable WAL mode for better performance
-sqlite.pragma('journal_mode = WAL');
+// Get database instance (lazy initialization)
+export function getDB() {
+  if (!db) {
+    return initializeDB();
+  }
+  return db;
+}
 
-// Create drizzle instance
-export const db = drizzle(sqlite, { schema });
+// Export db for backward compatibility
+export const db = new Proxy({} as ReturnType<typeof drizzle>, {
+  get(target, prop) {
+    const database = getDB();
+    return database[prop as keyof typeof database];
+  }
+});
 
 // Initialize database with cultural context data
 export async function initializeDatabase() {
