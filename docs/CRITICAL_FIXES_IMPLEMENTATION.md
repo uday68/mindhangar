@@ -392,7 +392,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import { I18nProvider } from './src/contexts/I18nContext';
-import './index.css';
+import './';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <I18nProvider>

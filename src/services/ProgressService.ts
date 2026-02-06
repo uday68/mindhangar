@@ -1,9 +1,18 @@
 /**
- * Progress Service - Tracks user learning progress and achievements
- * Handles XP, levels, streaks, and learning analytics
+ * Progress Service - Tracks user learning progress and achievements with AI predictions
+ * Handles XP, levels, streaks, learning analytics, and performance predictions
+ * Integrates with Performance Prediction Model for learning gap identification
  */
 
 import { DatabaseManager } from '../db';
+import { performancePredictionModel } from './ai/PerformancePredictionModel';
+import type { 
+  StudentActivity, 
+  Assessment, 
+  PerformancePrediction,
+  LearningGap,
+  DifficultyRecommendation 
+} from './ai/PerformancePredictionModel';
 
 export interface UserProgress {
   userId: string;
@@ -26,6 +35,10 @@ export interface LearningStats {
   xp: number;
   level: number;
   achievements: Achievement[];
+  // AI-powered predictions
+  predictions?: PerformancePrediction[];
+  learningGaps?: LearningGap[];
+  difficultyRecommendations?: DifficultyRecommendation[];
 }
 
 export interface Achievement {
@@ -50,7 +63,7 @@ export interface StudySession {
 
 class ProgressService {
   /**
-   * Update user progress for content
+   * Update user progress for content with AI tracking
    */
   async updateProgress(
     userId: string,
@@ -64,9 +77,117 @@ class ProgressService {
   ): Promise<void> {
     await DatabaseManager.updateUserProgress(userId, contentId, language, progress);
 
+    // Track activity for AI model
+    await this.trackActivityForAI(userId, contentId, progress);
+
     // Award XP if completed
     if (progress.status === 'completed') {
       await this.awardXP(userId, this.calculateXP(progress.score, progress.timeSpent));
+    }
+
+    // Update predictions after new activity
+    this.updatePredictionsAsync(userId).catch(error => {
+      console.error('Failed to update predictions:', error);
+    });
+  }
+
+  /**
+   * Track activity for AI Performance Prediction Model
+   */
+  private async trackActivityForAI(
+    userId: string,
+    contentId: string,
+    progress: {
+      status: 'not_started' | 'in_progress' | 'completed';
+      score?: number;
+      timeSpent?: number;
+    }
+  ): Promise<void> {
+    try {
+      // Get content metadata to extract subject/topic
+      const content = await DatabaseManager.getLocalizedContent(contentId, 'en');
+      if (!content) return;
+
+      const activity: StudentActivity = {
+        id: `activity_${Date.now()}`,
+        contentId,
+        subject: (content as any).classification?.subject || 'Mathematics',
+        topic: (content as any).classification?.topic || 'General',
+        difficulty: (content as any).classification?.difficulty || 'Medium',
+        timeSpent: (progress.timeSpent || 0) / 60, // Convert to minutes
+        completed: progress.status === 'completed',
+        score: progress.score,
+        timestamp: new Date(),
+      };
+
+      // Track activity in AI model
+      await performancePredictionModel.trackActivity(userId, activity);
+    } catch (error) {
+      console.error('Error tracking activity for AI:', error);
+    }
+  }
+
+  /**
+   * Update performance predictions (async, non-blocking)
+   */
+  private async updatePredictionsAsync(userId: string): Promise<void> {
+    try {
+      // This will trigger cache update in the AI model
+      await performancePredictionModel.predictPerformance(userId, {
+        id: 'upcoming_assessment',
+        subject: 'Mathematics',
+        topics: ['Algebra', 'Geometry'],
+        difficulty: 'Medium',
+        totalQuestions: 20,
+      });
+    } catch (error) {
+      console.error('Error updating predictions:', error);
+    }
+  }
+
+  /**
+   * Get performance predictions for upcoming assessments
+   */
+  async getPerformancePredictions(
+    userId: string,
+    assessments: Assessment[]
+  ): Promise<PerformancePrediction[]> {
+    try {
+      const predictions = await Promise.all(
+        assessments.map(assessment =>
+          performancePredictionModel.predictPerformance(userId, assessment)
+        )
+      );
+      return predictions;
+    } catch (error) {
+      console.error('Error getting performance predictions:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Identify learning gaps for a user
+   */
+  async identifyLearningGaps(userId: string): Promise<LearningGap[]> {
+    try {
+      const gaps = await performancePredictionModel.identifyLearningGaps(userId);
+      return gaps;
+    } catch (error) {
+      console.error('Error identifying learning gaps:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get difficulty recommendations for a user
+   */
+  async getDifficultyRecommendations(userId: string): Promise<DifficultyRecommendation[]> {
+    try {
+      const recommendations = await performancePredictionModel.recommendDifficulty(userId);
+      return recommendations;
+    } catch (error) {
+      console.error('Error getting difficulty recommendations:', error);
+      return [];
     }
   }
 
@@ -164,7 +285,7 @@ class ProgressService {
   }
 
   /**
-   * Get learning statistics
+   * Get learning statistics with AI predictions
    */
   async getLearningStats(userId: string): Promise<LearningStats> {
     try {
@@ -179,6 +300,10 @@ class ProgressService {
       // Calculate streak
       const streak = await this.calculateStreak(userId);
 
+      // Get AI predictions
+      const learningGaps = await this.identifyLearningGaps(userId);
+      const difficultyRecommendations = await this.getDifficultyRecommendations(userId);
+
       return {
         totalTimeSpent,
         totalContentCompleted: completed.length,
@@ -188,6 +313,8 @@ class ProgressService {
         xp: 0, // Would come from database
         level: 1, // Would come from database
         achievements: [], // Would come from database
+        learningGaps,
+        difficultyRecommendations,
       };
     } catch (error) {
       console.error('Error fetching learning stats:', error);

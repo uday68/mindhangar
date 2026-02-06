@@ -1,11 +1,14 @@
 /**
- * Content Service - Manages educational content with localization
+ * Content Service - Manages educational content with localization and AI classification
  * Handles CRUD operations for notes, videos, quizzes, and study materials
+ * Integrates with Educational Content Model for automatic classification
  */
 
 import { DatabaseManager } from '../db';
 import { bandwidthOptimizer } from './BandwidthOptimizer';
 import { offlineSyncService } from './OfflineSyncService';
+import { educationalContentModel } from './ai/EducationalContentModel';
+import type { ContentClassification, ContentMetadata } from './ai/EducationalContentModel';
 
 export interface Content {
   id: string;
@@ -18,6 +21,10 @@ export interface Content {
   tags?: string[];
   createdAt: Date;
   updatedAt: Date;
+  // AI-generated metadata
+  classification?: ContentClassification;
+  metadata?: ContentMetadata;
+  aiProcessed?: boolean;
 }
 
 export interface VideoContent {
@@ -63,7 +70,7 @@ export interface NoteBlock {
 
 class ContentService {
   /**
-   * Create new content
+   * Create new content with AI classification
    */
   async createContent(content: Omit<Content, 'id' | 'createdAt' | 'updatedAt'>): Promise<Content> {
     const newContent: Content = {
@@ -71,7 +78,13 @@ class ContentService {
       id: `content_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       createdAt: new Date(),
       updatedAt: new Date(),
+      aiProcessed: false,
     };
+
+    // Classify content using AI model (async, non-blocking)
+    this.classifyContentAsync(newContent).catch(error => {
+      console.error('Failed to classify content:', error);
+    });
 
     // Save to offline storage
     await offlineSyncService.saveNote({
@@ -84,6 +97,115 @@ class ContentService {
     bandwidthOptimizer.trackDataUsage(dataSize, 'other');
 
     return newContent;
+  }
+
+  /**
+   * Classify content using Educational Content Model (async)
+   */
+  private async classifyContentAsync(content: Content): Promise<void> {
+    try {
+      // Extract text content for classification
+      const textContent = this.extractTextContent(content);
+      
+      if (!textContent || textContent.length < 50) {
+        // Content too short for meaningful classification
+        return;
+      }
+
+      // Classify content
+      const classification = await educationalContentModel.classifyContent(
+        textContent,
+        content.language as any
+      );
+
+      // Extract metadata
+      const metadata = await educationalContentModel.extractMetadata(
+        textContent,
+        content.language as any
+      );
+
+      // Update content with AI results
+      await this.updateContent(content.id, {
+        classification,
+        metadata,
+        aiProcessed: true,
+        tags: [...(content.tags || []), ...classification.keywords],
+      });
+
+      console.log(`✅ Content ${content.id} classified:`, classification);
+    } catch (error) {
+      console.error('Error classifying content:', error);
+    }
+  }
+
+  /**
+   * Extract text content from various content types
+   */
+  private extractTextContent(content: Content): string {
+    let text = `${content.title}\n${content.description || ''}`;
+
+    switch (content.type) {
+      case 'note':
+        const noteData = content.data as NoteContent;
+        text += '\n' + noteData.blocks.map(b => b.content).join('\n');
+        break;
+      
+      case 'video':
+        const videoData = content.data as VideoContent;
+        text += '\n' + (videoData.summary || '') + '\n' + (videoData.transcript || '');
+        break;
+      
+      case 'quiz':
+        const quizData = content.data as QuizContent;
+        text += '\n' + quizData.questions.map(q => 
+          `${q.question}\n${q.options.join('\n')}\n${q.explanation || ''}`
+        ).join('\n\n');
+        break;
+    }
+
+    return text.trim();
+  }
+
+  /**
+   * Batch classify multiple content items
+   */
+  async batchClassifyContent(contentIds: string[], language: string): Promise<void> {
+    const contents = await Promise.all(
+      contentIds.map(id => this.getContent(id, language))
+    );
+
+    const validContents = contents.filter((c): c is Content => c !== null && !c.aiProcessed);
+
+    if (validContents.length === 0) {
+      return;
+    }
+
+    const textContents = validContents.map(c => ({
+      text: this.extractTextContent(c),
+      language: c.language as any
+    }));
+
+    try {
+      const results = await educationalContentModel.batchClassify(
+        textContents,
+        language as any
+      );
+
+      // Update all contents with results
+      await Promise.all(
+        validContents.map((content, index) =>
+          this.updateContent(content.id, {
+            classification: results[index],
+            aiProcessed: true,
+            tags: [...(content.tags || []), ...results[index].keywords],
+          })
+        )
+      );
+
+      console.log(`✅ Batch classified ${validContents.length} content items`);
+    } catch (error) {
+      console.error('Error batch classifying content:', error);
+    }
   }
 
   /**

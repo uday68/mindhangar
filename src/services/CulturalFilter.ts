@@ -7,6 +7,9 @@ import {
   CulturalAdaptation,
   CULTURAL_CONTEXTS 
 } from '@/src/types/localization';
+import { culturalContextModel } from './ai/CulturalContextModel';
+import type { CulturalEvaluation } from './ai/CulturalContextModel';
+import type { Language } from './ai/EducationalContentModel';
 
 /**
  * Cultural Filter interface for ensuring culturally appropriate content
@@ -45,7 +48,42 @@ export class IndianCulturalFilter implements CulturalFilter {
     let culturalScore = 0.5; // Start with neutral score
     const warnings: string[] = [];
 
-    // Check for inappropriate content
+    // Use AI model for cultural evaluation
+    try {
+      const evaluation = await culturalContextModel.evaluateContent(
+        content,
+        this.mapRegionToLanguage(region),
+        10 // default target age
+      );
+
+      // Add AI-detected issues as warnings
+      for (const issue of evaluation.issues) {
+        warnings.push(`${issue.type}: ${issue.description}`);
+        
+        // Adjust score based on severity
+        if (issue.severity === 'high') culturalScore -= 0.3;
+        else if (issue.severity === 'medium') culturalScore -= 0.15;
+        else culturalScore -= 0.05;
+      }
+
+      // Add AI recommendations as adaptations
+      for (const recommendation of evaluation.recommendations) {
+        adaptations.push({
+          type: 'example',
+          original: content,
+          adapted: recommendation,
+          region,
+          reasoning: 'AI-suggested cultural adaptation'
+        });
+      }
+
+      // Use AI confidence to adjust score
+      culturalScore = (culturalScore + evaluation.confidence) / 2;
+    } catch (error) {
+      console.error('AI cultural evaluation failed, using fallback:', error);
+    }
+
+    // Check for inappropriate content (fallback)
     for (const inappropriate of this.inappropriateContent) {
       if (content.toLowerCase().includes(inappropriate.toLowerCase())) {
         warnings.push(`Content contains potentially inappropriate reference: ${inappropriate}`);
@@ -88,6 +126,21 @@ export class IndianCulturalFilter implements CulturalFilter {
       culturalScore,
       warnings
     };
+  }
+
+  /**
+   * Map region to language for AI model
+   */
+  private mapRegionToLanguage(region: IndianRegion): Language {
+    const mapping: Record<IndianRegion, Language> = {
+      'north': 'hi',
+      'south': 'ta',
+      'east': 'bn',
+      'west': 'mr',
+      'central': 'hi',
+      'northeast': 'en',
+    };
+    return mapping[region] || 'en';
   }
 
   async adaptExamples(examples: Example[], culturalContext: CulturalContext): Promise<Example[]> {
