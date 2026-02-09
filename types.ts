@@ -1,5 +1,5 @@
 
-export type PanelType = 'search' | 'video' | 'notes' | 'planner' | 'quiz' | 'focus' | 'chat' | 'notifications' | 'settings';
+export type PanelType = 'search' | 'video' | 'notes' | 'planner' | 'quiz' | 'focus' | 'chat' | 'notifications' | 'settings' | 'dashboard' | 'analytics' | 'progress' | 'predictions';
 
 export interface PanelState {
   id: PanelType;
@@ -112,6 +112,9 @@ export interface Notification {
 
 export interface AppSettings {
   apiKey: string;
+  aiProvider: 'auto' | 'gemini' | 'huggingface' | 'ollama';
+  ollamaBaseUrl: string;
+  ollamaModel: string;
   username: string;
   enableCamera: boolean;
   theme: 'light' | 'dark';

@@ -12,7 +12,7 @@ const APPROVED_EDUCATIONAL_IDS = [
 ];
 
 export const VideoPanel: React.FC = () => {
-  const { focusSession, settings, isFocusMode, setCurrentTranscript } = useStore();
+  const { focusSession, isFocusMode, setCurrentTranscript } = useStore();
   const [activeTab, setActiveTab] = useState<'transcript' | 'summary'>('transcript');
   const [videoUrl, setVideoUrl] = useState('');
   const [embedId, setEmbedId] = useState('');
@@ -92,13 +92,9 @@ export const VideoPanel: React.FC = () => {
 
   const handleSummarize = async () => {
     if (!transcriptText.trim()) return;
-    if (!settings.apiKey) {
-      alert("Please set your API Key in Settings to use AI Summarization.");
-      return;
-    }
     setLoading(true);
     setActiveTab('summary');
-    const result = await summarizeContent(settings.apiKey, transcriptText);
+    const result = await summarizeContent(transcriptText, 'video');
     setSummary(result);
     setLoading(false);
   };

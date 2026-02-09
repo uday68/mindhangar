@@ -11,7 +11,6 @@
  */
 
 import { pipeline } from '@xenova/transformers';
-import { errorService, ErrorCode } from './ErrorService';
 
 interface HFAIRequest {
   prompt: string;
@@ -36,6 +35,8 @@ class HuggingFaceAIService {
 
   /**
    * Initialize the AI service and load models
+   * Non-blocking: Returns true even if models fail to load
+   * Falls back to rule-based responses
    */
   async initialize(onProgress?: (model: string, progress: number) => void): Promise<boolean> {
     if (this.isInitialized) return true;
@@ -46,42 +47,64 @@ class HuggingFaceAIService {
     try {
       console.log('🤖 Loading AI models in browser...');
 
-      // Load text generation model (small and fast)
-      this.textGenerator = await pipeline(
-        'text-generation',
-        'Xenova/distilgpt2',
-        {
-          progress_callback: (progress: any) => {
-            if (progress.status === 'progress') {
-              this.loadingProgress['text-generation'] = progress.progress || 0;
-              onProgress?.('text-generation', progress.progress || 0);
+      // Try to load text generation model (small and fast)
+      try {
+        this.textGenerator = await pipeline(
+          'text-generation',
+          'Xenova/distilgpt2',
+          {
+            progress_callback: (progress: any) => {
+              if (progress.status === 'progress') {
+                this.loadingProgress['text-generation'] = progress.progress || 0;
+                onProgress?.('text-generation', progress.progress || 0);
+              }
             }
           }
-        }
-      );
+        );
+        console.log('✅ Text generation model loaded');
+      } catch (modelError) {
+        console.warn('⚠️ Text generation model failed to load, using fallback:', modelError);
+        this.textGenerator = null;
+      }
 
-      // Load question answering model
-      this.questionAnswerer = await pipeline(
-        'question-answering',
-        'Xenova/distilbert-base-cased-distilled-squad',
-        {
-          progress_callback: (progress: any) => {
-            if (progress.status === 'progress') {
-              this.loadingProgress['question-answering'] = progress.progress || 0;
-              onProgress?.('question-answering', progress.progress || 0);
+      // Try to load question answering model
+      try {
+        this.questionAnswerer = await pipeline(
+          'question-answering',
+          'Xenova/distilbert-base-cased-distilled-squad',
+          {
+            progress_callback: (progress: any) => {
+              if (progress.status === 'progress') {
+                this.loadingProgress['question-answering'] = progress.progress || 0;
+                onProgress?.('question-answering', progress.progress || 0);
+              }
             }
           }
-        }
-      );
+        );
+        console.log('✅ Question answering model loaded');
+      } catch (modelError) {
+        console.warn('⚠️ Question answering model failed to load, using fallback:', modelError);
+        this.questionAnswerer = null;
+      }
 
+      // Mark as initialized even if models failed to load
+      // We'll use rule-based fallbacks
       this.isInitialized = true;
       this.isLoading = false;
-      console.log('✅ AI models loaded successfully!');
+      
+      if (this.textGenerator || this.questionAnswerer) {
+        console.log('✅ AI models loaded successfully!');
+      } else {
+        console.log('ℹ️ AI models not available, using rule-based fallbacks');
+      }
+      
       return true;
     } catch (error) {
-      console.error('❌ Failed to load AI models:', error);
+      console.error('❌ Failed to initialize AI service:', error);
       this.isLoading = false;
-      throw errorService.handleAIError(error, 'huggingface');
+      // Still mark as initialized to allow rule-based fallbacks
+      this.isInitialized = true;
+      return true; // Non-blocking: return true to allow app to continue
     }
   }
 
@@ -131,11 +154,10 @@ class HuggingFaceAIService {
         confidence: 0.8
       };
     } catch (error) {
-      const appError = errorService.handleAIError(error, 'huggingface');
-      console.error('Text generation error:', appError);
+      console.error('Text generation error:', error);
       return {
         text: '',
-        error: appError.userMessage
+        error: error instanceof Error ? error.message : 'Text generation failed'
       };
     }
   }
@@ -159,11 +181,10 @@ class HuggingFaceAIService {
         confidence: result.score
       };
     } catch (error) {
-      const appError = errorService.handleAIError(error, 'huggingface');
-      console.error('Question answering error:', appError);
+      console.error('Question answering error:', error);
       return {
         text: '',
-        error: appError.userMessage
+        error: error instanceof Error ? error.message : 'Question answering failed'
       };
     }
   }

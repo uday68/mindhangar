@@ -164,9 +164,9 @@ Built with **React 19**, **TypeScript**, and **Google Gemini API**, it leverages
 
 ### Prerequisites
 *   **Node.js** (v18+)
-*   **Google Gemini API Key** (Get one at [aistudio.google.com](https://aistudio.google.com))
 *   **Modern Browser** with JavaScript enabled
-*   **Internet Connection** (for initial setup, then works offline)
+*   **Internet Connection** (for initial setup, then works offline for free models)
+*   **Optional:** Gemini API key (for cloud quality) or Ollama (for local models)
 
 ### Quick Start
 1.  **Clone the repository:**
@@ -190,7 +190,7 @@ Built with **React 19**, **TypeScript**, and **Google Gemini API**, it leverages
 ### First-Time Setup
 1.  **Language Selection:** Choose from 8 Indian languages
 2.  **Educational Profile:** Select board (CBSE/ICSE/State), grade, exam goals
-3.  **API Configuration:** Add your Gemini API key in Settings
+3.  **AI Configuration:** Choose provider (Auto/Hugging Face/Ollama/Gemini) in Settings
 4.  **Offline Content:** Download essential content for offline access
 
 ### Available Scripts
@@ -329,6 +329,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Indian Education System:** For inspiring culturally-sensitive design
 - **Open Source Community:** For the amazing tools and libraries
 - **Google Gemini Team:** For providing advanced AI capabilities
+- **Hugging Face:** For free in-browser AI models
+- **Ollama:** For local model serving
 - **Indian Developers:** For feedback and cultural insights
 
 ---

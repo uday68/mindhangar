@@ -204,20 +204,29 @@ This hybrid approach:
 
 ### Option 1: Use Free Models Only (Recommended for Students)
 
-No configuration needed! Just log in and start using the app.
+1. Go to Settings panel
+2. Choose **Hugging Face** provider
+3. Start using the app (models download on first use)
 
-### Option 2: Add Gemini API Key (Optional)
+### Option 2: Use Ollama (Local AI)
+
+1. Install Ollama and pull a model (example: `ollama pull llama3.1`)
+2. Go to Settings panel
+3. Choose **Ollama** provider
+4. Set base URL and model name
+
+### Option 3: Add Gemini API Key (Optional)
 
 1. Go to Settings panel
-2. Enter your Google Gemini API key
-3. System will use Gemini for complex tasks
-4. Falls back to free models if API fails
+2. Choose **Gemini** provider
+3. Enter your Google Gemini API key
+4. System will use Gemini for cloud quality
 
-### Option 3: Hybrid Mode (Best Performance)
+### Option 4: Auto Mode (Best for Prototyping)
 
-The system automatically uses this mode when you have an API key:
-- Simple tasks → Hugging Face (free, fast)
-- Complex tasks → Gemini API (high quality)
+Auto selects the best available option:
+- Uses Gemini when a key is present and valid
+- Falls back to Hugging Face if Gemini is unavailable
 
 ## 🌐 Offline Support
 

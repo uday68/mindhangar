@@ -10,9 +10,16 @@
  * - Multi-language support
  */
 
-import { testConnection } from '../../services/geminiService';
 import { hfAI } from './HuggingFaceAIService';
-import { errorService, ErrorCode } from './ErrorService';
+
+export type AIProvider = 'auto' | 'gemini' | 'huggingface' | 'ollama';
+
+export interface AIInitOptions {
+  apiKey?: string;
+  provider?: AIProvider;
+  ollamaBaseUrl?: string;
+  ollamaModel?: string;
+}
 
 interface AIRequest {
   prompt: string;
@@ -42,34 +49,179 @@ class AIAssistantService {
   private baseURL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
   private isInitialized = false;
   private useHuggingFace = false; // Fallback to free models
+  private useOllama = false;
+  private provider: AIProvider = 'auto';
+  private ollamaBaseUrl = 'http://localhost:11434';
+  private ollamaModel = 'llama3.1';
 
   /**
    * Initialize the AI service with API key (optional)
    * If no API key provided, will use free Hugging Face models
+   * Non-blocking: Always returns true to allow app to continue
    */
-  async initialize(apiKey?: string): Promise<boolean> {
-    if (apiKey) {
-      this.apiKey = apiKey;
-      
-      // Test connection
-      const isValid = await testConnection(apiKey);
+  async initialize(options?: string | AIInitOptions): Promise<boolean> {
+    const config = typeof options === 'string' ? { apiKey: options } : options || {};
+    const provider = config.provider || 'auto';
+
+    if (typeof config.apiKey !== 'undefined') {
+      this.apiKey = config.apiKey || null;
+    }
+
+    if (config.ollamaBaseUrl) {
+      this.ollamaBaseUrl = config.ollamaBaseUrl;
+    }
+
+    if (config.ollamaModel) {
+      this.ollamaModel = config.ollamaModel;
+    }
+
+    this.provider = provider;
+    this.useHuggingFace = false;
+    this.useOllama = false;
+    this.isInitialized = false;
+
+    if (provider === 'gemini') {
+      if (!this.apiKey) {
+        console.warn('⚠️ Gemini API key missing, using free Hugging Face models');
+        return await this.initializeHuggingFace();
+      }
+      const isValid = await this.testGeminiConnection(this.apiKey);
       this.isInitialized = isValid;
-      
       if (isValid) {
         this.useHuggingFace = false;
+        this.useOllama = false;
+        console.log('✅ Gemini API initialized successfully');
         return true;
+      }
+      console.warn('⚠️ Gemini API test failed, using free Hugging Face models');
+      return await this.initializeHuggingFace();
+    }
+
+    if (provider === 'ollama') {
+      const isValid = await this.testOllamaConnection(this.ollamaBaseUrl);
+      if (isValid) {
+        this.useOllama = true;
+        this.useHuggingFace = false;
+        this.isInitialized = true;
+        console.log('✅ Ollama initialized successfully');
+        return true;
+      }
+      console.warn('⚠️ Ollama not reachable, using free Hugging Face models');
+      return await this.initializeHuggingFace();
+    }
+
+    if (provider === 'huggingface') {
+      return await this.initializeHuggingFace();
+    }
+
+    if (this.apiKey) {
+      const isValid = await this.testGeminiConnection(this.apiKey);
+      if (isValid) {
+        this.isInitialized = true;
+        this.useHuggingFace = false;
+        this.useOllama = false;
+        console.log('✅ Gemini API initialized successfully');
+        return true;
+      }
+      console.warn('⚠️ Gemini API test failed, using free Hugging Face models');
+    }
+
+    return await this.initializeHuggingFace();
+  }
+
+  async testConnection(options?: AIInitOptions): Promise<boolean> {
+    const provider = options?.provider || this.provider || 'auto';
+    const apiKey = typeof options?.apiKey !== 'undefined' ? options?.apiKey : this.apiKey || undefined;
+    const ollamaBaseUrl = options?.ollamaBaseUrl || this.ollamaBaseUrl;
+
+    if (provider === 'gemini') {
+      if (!apiKey) return false;
+      return await this.testGeminiConnection(apiKey);
+    }
+
+    if (provider === 'ollama') {
+      return await this.testOllamaConnection(ollamaBaseUrl);
+    }
+
+    if (provider === 'huggingface') {
+      try {
+        const hfReady = await hfAI.initialize((model, progress) => {
+          console.log(`Loading ${model}: ${Math.round(progress * 100)}%`);
+        });
+        return hfReady;
+      } catch {
+        return false;
       }
     }
 
-    // Fallback to Hugging Face models
+    if (apiKey && await this.testGeminiConnection(apiKey)) {
+      return true;
+    }
+
+    try {
+      const hfReady = await hfAI.initialize((model, progress) => {
+        console.log(`Loading ${model}: ${Math.round(progress * 100)}%`);
+      });
+      return hfReady;
+    } catch {
+      return false;
+    }
+  }
+
+  private async initializeHuggingFace(): Promise<boolean> {
     console.log('🤖 Using free Hugging Face models (no API key required)');
     this.useHuggingFace = true;
-    const hfReady = await hfAI.initialize((model, progress) => {
-      console.log(`Loading ${model}: ${Math.round(progress * 100)}%`);
-    });
-    this.isInitialized = hfReady;
+    this.useOllama = false;
     
-    return hfReady;
+    try {
+      const hfReady = await hfAI.initialize((model, progress) => {
+        console.log(`Loading ${model}: ${Math.round(progress * 100)}%`);
+      });
+      this.isInitialized = hfReady;
+      
+      if (hfReady) {
+        console.log('✅ Hugging Face AI initialized');
+      } else {
+        console.log('ℹ️ Hugging Face models not available, using rule-based fallbacks');
+      }
+    } catch (error) {
+      console.warn('⚠️ Hugging Face initialization failed, using rule-based fallbacks:', error);
+      this.isInitialized = true;
+    }
+    
+    return true;
+  }
+
+  private async testGeminiConnection(apiKey: string): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.baseURL}?key=${apiKey}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{ text: 'Hello' }]
+          }],
+          generationConfig: {
+            temperature: 0,
+            maxOutputTokens: 8
+          }
+        })
+      });
+      return response.ok;
+    } catch {
+      return false;
+    }
+  }
+
+  private async testOllamaConnection(baseUrl: string): Promise<boolean> {
+    try {
+      const response = await fetch(`${baseUrl.replace(/\/$/, '')}/api/tags`);
+      return response.ok;
+    } catch {
+      return false;
+    }
   }
 
   /**
@@ -131,6 +283,42 @@ Now respond to: ${prompt}
       };
     }
 
+    if (this.useOllama) {
+      try {
+        const response = await fetch(`${this.ollamaBaseUrl.replace(/\/$/, '')}/api/generate`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: this.ollamaModel,
+            prompt: enhancedPrompt,
+            stream: false,
+            options: {
+              temperature: request.temperature || 0.7,
+              num_predict: request.maxTokens || 1024
+            }
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`Ollama request failed with status ${response.status}`);
+        }
+
+        const data = await response.json();
+        return {
+          text: data.response || '',
+          confidence: 0.7
+        };
+      } catch (error) {
+        console.error('Ollama generation error:', error);
+        return {
+          text: '',
+          error: error instanceof Error ? error.message : 'Ollama generation failed'
+        };
+      }
+    }
+
     // Use Gemini API
     try {
       const response = await fetch(`${this.baseURL}?key=${this.apiKey}`, {
@@ -154,10 +342,7 @@ Now respond to: ${prompt}
       });
 
       if (!response.ok) {
-        throw errorService.handleAPIError(
-          { response: { status: response.status } },
-          this.baseURL
-        );
+        throw new Error(`API request failed with status ${response.status}`);
       }
 
       const data = await response.json();
@@ -168,11 +353,10 @@ Now respond to: ${prompt}
         confidence: 0.9
       };
     } catch (error) {
-      const appError = errorService.handleAIError(error, 'gemini');
-      console.error('AI generation error:', appError);
+      console.error('AI generation error:', error);
       return {
         text: '',
-        error: appError.userMessage
+        error: error instanceof Error ? error.message : 'AI generation failed'
       };
     }
   }

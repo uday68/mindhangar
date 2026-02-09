@@ -5,7 +5,6 @@ import { useStore } from '../../store/useStore';
 import { Icons } from '../Icons';
 
 export const PlannerPanel: React.FC = () => {
-  const { settings } = useStore();
   const [activeTab, setActiveTab] = useState<'schedule' | 'strategy' | 'roadmap'>('roadmap');
 
   // Schedule State
@@ -32,16 +31,17 @@ export const PlannerPanel: React.FC = () => {
   const [roadmapLoading, setRoadmapLoading] = useState(false);
 
   const handleGeneratePlan = async () => {
-    if (!goals || !settings.apiKey) return;
+    if (!goals) return;
     setScheduleLoading(true);
-    const result = await generatePlanSuggestion(settings.apiKey, goals.split(','));
+    const goalList = goals.split(',').map((goal) => goal.trim()).filter((goal) => goal.length > 0);
+    const result = await generatePlanSuggestion(goalList);
     const lines = result ? result.split('\n').filter(line => line.trim().length > 0) : ["No plan generated."];
     setPlan(lines);
     setScheduleLoading(false);
   };
 
   const handleGenerateReview = async () => {
-    if (!reviewTopic || !confusion || !settings.apiKey) return;
+    if (!reviewTopic || !confusion) return;
     setReviewLoading(true);
     setReviewResult(null);
     
@@ -51,15 +51,15 @@ export const PlannerPanel: React.FC = () => {
       confusion
     };
     
-    const result = await generatePerformanceReview(settings.apiKey, data);
+    const result = await generatePerformanceReview(data);
     setReviewResult(result);
     setReviewLoading(false);
   };
 
   const handleGenerateRoadmap = async () => {
-    if (!roadmapInput.goal || !roadmapInput.time || !settings.apiKey) return;
+    if (!roadmapInput.goal || !roadmapInput.time) return;
     setRoadmapLoading(true);
-    const result = await generateLearningRoadmap(settings.apiKey, roadmapInput.goal, roadmapInput.level, roadmapInput.time);
+    const result = await generateLearningRoadmap(roadmapInput.goal, roadmapInput.level, roadmapInput.time);
     setRoadmap(result);
     setRoadmapLoading(false);
   };
@@ -109,16 +109,6 @@ export const PlannerPanel: React.FC = () => {
       // store.togglePanel('notes');
     }
   };
-
-  if (!settings.apiKey) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full text-center p-4">
-        <Icons.Settings className="text-gray-400 mb-2" size={32} />
-        <h3 className="font-bold text-gray-700">API Key Required</h3>
-        <p className="text-xs text-gray-500 mb-4">Please configure your Gemini API Key in Settings to use the AI Planner.</p>
-      </div>
-    );
-  }
 
   return (
     <div className="flex flex-col h-full">

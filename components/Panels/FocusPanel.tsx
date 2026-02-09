@@ -4,7 +4,7 @@ import { useStore } from '../../store/useStore';
 import { analyzeFocusFrame } from '../../services/geminiService';
 
 export const FocusPanel: React.FC = () => {
-  const { setFocusMode, isFocusMode, focusSession, startSession, stopSession, settings, user, toggleUpgradeModal } = useStore();
+  const { setFocusMode, isFocusMode, focusSession, startSession, stopSession, user, toggleUpgradeModal } = useStore();
   
   // Local UI state
   const [deepFocusEnabled, setDeepFocusEnabled] = useState(false);
@@ -47,7 +47,7 @@ export const FocusPanel: React.FC = () => {
     let interval: any;
     
     const captureAndAnalyze = async () => {
-       if (!videoRef.current || !settings.apiKey || !cameraActive) return;
+       if (!videoRef.current || !cameraActive) return;
        
        // Create canvas to capture frame
        const canvas = document.createElement('canvas');
@@ -59,7 +59,7 @@ export const FocusPanel: React.FC = () => {
        ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
        const base64 = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
        
-       const result = await analyzeFocusFrame(settings.apiKey, base64);
+       const result = await analyzeFocusFrame(base64);
        setLastCheckTime(new Date());
        
        if (result) {
@@ -74,13 +74,13 @@ export const FocusPanel: React.FC = () => {
        }
     };
 
-    if (cameraActive && settings.apiKey) {
+    if (cameraActive) {
       // Check every 15 seconds to respect rate limits while maintaining utility
       interval = setInterval(captureAndAnalyze, 15000); 
     }
     
     return () => clearInterval(interval);
-  }, [cameraActive, settings.apiKey]);
+  }, [cameraActive]);
 
 
   const handleStartFlow = () => {

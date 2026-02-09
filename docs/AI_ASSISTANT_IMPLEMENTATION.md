@@ -1,7 +1,7 @@
 # AI Assistant Implementation Guide
 
 ## Overview
-Implemented a comprehensive AI-powered assistant system using Google Gemini API that provides intelligent help across all forms and features in MindHangar.
+Implemented a comprehensive AI-powered assistant system with selectable providers (Gemini, Hugging Face, Ollama) that provides intelligent help across all forms and features in MindHangar.
 
 ## Features Implemented
 
@@ -60,28 +60,33 @@ Implemented a comprehensive AI-powered assistant system using Google Gemini API 
                │
                ▼
 ┌─────────────────────────────────────────┐
-│      Google Gemini API                  │
-│  (gemini-pro model)                     │
+│  Providers                              │
+│  - Gemini (cloud)                       │
+│  - Hugging Face (free, in-browser)      │
+│  - Ollama (local)                       │
 └─────────────────────────────────────────┘
 ```
 
 ### Initialization Flow
 
 1. User logs in
-2. App checks for API key in settings
-3. If API key exists, initializes AI Assistant
-4. AI Assistant tests connection
+2. App reads provider settings (Auto/HF/Ollama/Gemini)
+3. AI Assistant tests the chosen provider
+4. Falls back to Hugging Face if needed
 5. Service becomes ready for use
 
 ```typescript
 // In App.tsx
-if (settings.apiKey) {
-  aiAssistant.initialize(settings.apiKey).then((success) => {
-    if (success) {
-      console.log('✅ AI Assistant initialized');
-    }
-  });
-}
+aiAssistant.initialize({
+  apiKey: settings.apiKey,
+  provider: settings.aiProvider,
+  ollamaBaseUrl: settings.ollamaBaseUrl,
+  ollamaModel: settings.ollamaModel
+}).then((success) => {
+  if (success) {
+    console.log('✅ AI Assistant initialized');
+  }
+});
 ```
 
 ## Usage Examples
@@ -178,8 +183,8 @@ The AI Assistant Widget is automatically available:
 
 ### Core Methods
 
-#### `initialize(apiKey: string): Promise<boolean>`
-Initialize the service with API key.
+#### `initialize(options?: AIInitOptions | string): Promise<boolean>`
+Initialize the service with provider configuration.
 
 #### `isReady(): boolean`
 Check if service is initialized and ready.
@@ -225,19 +230,19 @@ Get help for specific features.
 
 ## Configuration
 
-### API Key Setup
+### Provider Setup
 
-1. Get Gemini API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
-2. Open Settings panel in app
-3. Paste API key in "Gemini API Key" field
-4. Click "Test" to verify
-5. AI features automatically activate
+1. Open Settings panel in app
+2. Choose provider (Auto/Hugging Face/Ollama/Gemini)
+3. If using Gemini, add API key
+4. If using Ollama, set base URL and model
+5. Click "Test" to verify
 
 ### Environment Variables
 
 ```bash
-# .env
-GEMINI_API_KEY=your_api_key_here
+# .env (optional)
+GEMINI_API_KEY=your_gemini_api_key_here
 ```
 
 ## Use Cases
@@ -290,10 +295,9 @@ GEMINI_API_KEY=your_api_key_here
 ## Technical Details
 
 ### API Integration
-- **Model**: Google Gemini Pro
-- **Endpoint**: `generativelanguage.googleapis.com/v1beta`
-- **Method**: POST with JSON
-- **Authentication**: API key in URL parameter
+- **Gemini Endpoint**: `generativelanguage.googleapis.com/v1beta`
+- **Ollama Endpoint**: `http://localhost:11434/api/generate`
+- **Hugging Face**: In-browser models via transformers.js
 
 ### Performance
 - **Response Time**: 1-3 seconds average
@@ -316,10 +320,10 @@ GEMINI_API_KEY=your_api_key_here
 ## Limitations
 
 ### Current Limitations
-1. **Requires API Key** - Users must configure
-2. **Internet Required** - No offline AI
-3. **Rate Limits** - Google's API limits apply
-4. **Cost** - API usage may incur charges
+1. **Ollama Setup** - Requires local model installation
+2. **First Load** - Free models require download/cache
+3. **Rate Limits** - Gemini API limits apply
+4. **Cost** - Gemini usage may incur charges
 5. **Language Support** - Best for English and Hindi
 
 ### Future Enhancements
@@ -332,7 +336,7 @@ GEMINI_API_KEY=your_api_key_here
 ## Testing
 
 ### Manual Testing
-1. Configure API key in Settings
+1. Choose provider in Settings
 2. Open any form with SmartInput
 3. Type some text
 4. Verify autocomplete appears
@@ -360,11 +364,11 @@ expect(hindi).toContain('नमस्ते');
 ## Troubleshooting
 
 ### AI Not Working
-1. Check API key is configured
-2. Verify internet connection
-3. Test API key in Settings
-4. Check browser console for errors
-5. Try refreshing the page
+1. Check provider selection in Settings
+2. If Gemini, verify API key and internet
+3. If Ollama, verify base URL and model
+4. Click Test in Settings
+5. Check browser console for errors
 
 ### Slow Responses
 1. Check internet speed

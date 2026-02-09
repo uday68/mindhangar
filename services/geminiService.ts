@@ -6,7 +6,7 @@
  * and free Hugging Face models.
  */
 
-import { aiAssistant } from '../src/services/AIAssistantService';
+import { aiAssistant, AIInitOptions } from '../src/services/AIAssistantService';
 import { hfAI } from '../src/services/HuggingFaceAIService';
 import { errorService, ErrorCode } from '../src/services/ErrorService';
 import { QuizQuestion, Flashcard, SearchResult, LearningRoadmap } from '../types';
@@ -14,12 +14,9 @@ import { QuizQuestion, Flashcard, SearchResult, LearningRoadmap } from '../types
 /**
  * Test API connection
  */
-export async function testConnection(apiKey?: string): Promise<boolean> {
+export async function testConnection(options?: AIInitOptions): Promise<boolean> {
   try {
-    if (apiKey) {
-      await aiAssistant.initialize(apiKey);
-    }
-    return aiAssistant.isReady() || hfAI.isReady();
+    return await aiAssistant.testConnection(options);
   } catch (error) {
     console.error('Connection test failed:', error);
     return false;
@@ -29,7 +26,11 @@ export async function testConnection(apiKey?: string): Promise<boolean> {
 /**
  * Create a chat session
  */
-export async function createChatSession(systemPrompt?: string) {
+export async function createChatSession(options?: AIInitOptions | string, systemPrompt?: string) {
+  const config = typeof options === 'string' ? { apiKey: options } : options;
+  if (!aiAssistant.isReady()) {
+    await aiAssistant.initialize(config);
+  }
   return {
     sendMessage: async (message: string): Promise<string> => {
       try {
@@ -45,6 +46,20 @@ export async function createChatSession(systemPrompt?: string) {
         console.error('Chat error:', appError);
         return appError.userMessage;
       }
+    },
+    sendMessageStream: async function* (message: any) {
+      const prompt = Array.isArray(message)
+        ? message.find((part) => typeof part === 'string') || 'Describe the attached content.'
+        : message;
+      const response = await aiAssistant.generateResponse({
+        prompt,
+        context: systemPrompt,
+        temperature: 0.7,
+        maxTokens: 1024
+      });
+      yield {
+        text: () => response.text
+      };
     }
   };
 }
@@ -73,7 +88,7 @@ export async function summarizeContent(content: string, type: 'video' | 'article
 /**
  * Perform semantic search
  */
-export async function performSemanticSearch(query: string, context: string): Promise<SearchResult[]> {
+export async function performSemanticSearch(query: string, context: string = ''): Promise<SearchResult[]> {
   try {
     const prompt = `Search for: "${query}" in the following context. Return relevant results as JSON array with title, snippet, and relevance score:\n\n${context}`;
     
@@ -207,10 +222,11 @@ Provide: strengths, areas for improvement, and specific recommendations. Use enc
 /**
  * Generate plan suggestion
  */
-export async function generatePlanSuggestion(goal: string, timeAvailable: number, currentLevel: string): Promise<string> {
+export async function generatePlanSuggestion(goals: string[] | string, timeAvailable: number = 5, currentLevel: string = 'Mixed'): Promise<string> {
   try {
+    const goalList = Array.isArray(goals) ? goals.filter((g) => g.trim().length > 0) : [goals];
     const prompt = `Create a study plan for:
-- Goal: ${goal}
+- Goals: ${goalList.join(', ')}
 - Time Available: ${timeAvailable} hours per week
 - Current Level: ${currentLevel}
 
@@ -232,11 +248,12 @@ Provide a structured weekly plan with specific daily tasks. Consider Indian acad
 /**
  * Generate learning roadmap
  */
-export async function generateLearningRoadmap(goal: string, duration: number, subjects: string[]): Promise<LearningRoadmap> {
+export async function generateLearningRoadmap(goal: string, level: string, timeCommitment: string): Promise<LearningRoadmap> {
   try {
-    const prompt = `Create a ${duration}-week learning roadmap for:
+    const prompt = `Create a learning roadmap for:
 - Goal: ${goal}
-- Subjects: ${subjects.join(', ')}
+- Current Level: ${level}
+- Time Commitment: ${timeCommitment}
 
 Format as JSON with: title, description, weeks (array of week objects with weekNumber, focus, topics array, milestones array).
 Align with Indian education system (CBSE/ICSE/State boards).`;

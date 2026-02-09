@@ -121,6 +121,10 @@ export const LAYOUT_PRESETS: Record<string, {
       quiz: { id: 'quiz', x: 450, y: 100, width: 500, height: 600, isOpen: false },
       notifications: { id: 'notifications', x: 1040, y: 20, width: 320, height: 400, isOpen: false },
       settings: { id: 'settings', x: 480, y: 150, width: 400, height: 550, isOpen: false },
+      dashboard: { id: 'dashboard', x: 100, y: 50, width: 1200, height: 800, isOpen: false },
+      analytics: { id: 'analytics', x: 380, y: 20, width: 640, height: 500, isOpen: false },
+      progress: { id: 'progress', x: 1040, y: 20, width: 340, height: 500, isOpen: false },
+      predictions: { id: 'predictions', x: 380, y: 540, width: 640, height: 320, isOpen: false },
     }
   },
   'Cinema': {
@@ -136,6 +140,10 @@ export const LAYOUT_PRESETS: Record<string, {
       quiz: { id: 'quiz', x: 300, y: 100, width: 500, height: 600, isOpen: false },
       notifications: { id: 'notifications', x: 1000, y: 20, width: 300, height: 400, isOpen: false },
       settings: { id: 'settings', x: 400, y: 100, width: 400, height: 550, isOpen: false },
+      dashboard: { id: 'dashboard', x: 100, y: 50, width: 1200, height: 800, isOpen: false },
+      analytics: { id: 'analytics', x: 380, y: 20, width: 640, height: 500, isOpen: false },
+      progress: { id: 'progress', x: 1040, y: 20, width: 340, height: 500, isOpen: false },
+      predictions: { id: 'predictions', x: 380, y: 540, width: 640, height: 320, isOpen: false },
     }
   },
   'Research': {
@@ -151,6 +159,29 @@ export const LAYOUT_PRESETS: Record<string, {
       quiz: { id: 'quiz', x: 400, y: 100, width: 500, height: 600, isOpen: false },
       notifications: { id: 'notifications', x: 1000, y: 20, width: 300, height: 400, isOpen: false },
       settings: { id: 'settings', x: 400, y: 100, width: 400, height: 550, isOpen: false },
+      dashboard: { id: 'dashboard', x: 100, y: 50, width: 1200, height: 800, isOpen: false },
+      analytics: { id: 'analytics', x: 380, y: 20, width: 640, height: 500, isOpen: false },
+      progress: { id: 'progress', x: 1040, y: 20, width: 340, height: 500, isOpen: false },
+      predictions: { id: 'predictions', x: 380, y: 540, width: 640, height: 320, isOpen: false },
+    }
+  },
+  'AI Learning': {
+    label: 'AI Learning Hub',
+    description: 'Comprehensive AI dashboard with progress tracking and personalized insights.',
+    panels: {
+      dashboard: { id: 'dashboard', x: 100, y: 50, width: 1200, height: 800, isOpen: true },
+      progress: { id: 'progress', x: 20, y: 20, width: 340, height: 500, isOpen: false },
+      analytics: { id: 'analytics', x: 380, y: 20, width: 640, height: 500, isOpen: false },
+      predictions: { id: 'predictions', x: 380, y: 540, width: 640, height: 320, isOpen: false },
+      planner: { id: 'planner', x: 1040, y: 20, width: 340, height: 440, isOpen: false },
+      notes: { id: 'notes', x: 1040, y: 480, width: 340, height: 380, isOpen: false },
+      search: { id: 'search', x: 20, y: 540, width: 340, height: 320, isOpen: false },
+      video: { id: 'video', x: 380, y: 20, width: 640, height: 440, isOpen: false },
+      chat: { id: 'chat', x: 1040, y: 20, width: 320, height: 600, isOpen: false },
+      focus: { id: 'focus', x: 1040, y: 640, width: 320, height: 220, isOpen: false },
+      quiz: { id: 'quiz', x: 450, y: 100, width: 500, height: 600, isOpen: false },
+      notifications: { id: 'notifications', x: 1040, y: 20, width: 320, height: 400, isOpen: false },
+      settings: { id: 'settings', x: 480, y: 150, width: 400, height: 550, isOpen: false },
     }
   }
 };
@@ -585,6 +616,9 @@ export const useStore = create<AppState>()(
       ],
       settings: {
         apiKey: process.env.API_KEY || '',
+        aiProvider: 'auto',
+        ollamaBaseUrl: 'http://localhost:11434',
+        ollamaModel: 'llama3.1',
         username: 'Student',
         enableCamera: true,
         theme: 'light'

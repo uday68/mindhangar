@@ -5,7 +5,7 @@ import { useStore } from '../../store/useStore';
 import { Icons } from '../Icons';
 
 export const QuizPanel: React.FC = () => {
-  const { addXp, settings } = useStore();
+  const { addXp } = useStore();
   const [activeTab, setActiveTab] = useState<'quiz' | 'flashcards'>('quiz');
   
   // Quiz State
@@ -34,7 +34,7 @@ export const QuizPanel: React.FC = () => {
   const [isFlipped, setIsFlipped] = useState(false);
 
   const handleGenerateQuiz = async () => {
-    if (!topic || !settings.apiKey) return;
+    if (!topic) return;
     setQuizLoading(true);
     setQuestions([]);
     setAnswers({});
@@ -43,19 +43,19 @@ export const QuizPanel: React.FC = () => {
     setReflectionText('');
     setReflectionConfidence(5);
     
-    const qs = await generateQuizQuestions(settings.apiKey, topic, difficulty);
+    const qs = await generateQuizQuestions(topic, 5, difficulty);
     setQuestions(qs);
     setQuizLoading(false);
   };
 
   const handleGenerateFlashcards = async () => {
-    if (!topic || !settings.apiKey) return;
+    if (!topic) return;
     setFlashcardLoading(true);
     setFlashcards([]);
     setCurrentCardIndex(0);
     setIsFlipped(false);
 
-    const cards = await generateFlashcards(settings.apiKey, topic);
+    const cards = await generateFlashcards(topic);
     setFlashcards(cards);
     setFlashcardLoading(false);
   };
@@ -84,14 +84,14 @@ export const QuizPanel: React.FC = () => {
   };
 
   const handleGetCoaching = async () => {
-    if (!reflectionText || !settings.apiKey) return;
+    if (!reflectionText) return;
     setCoachingLoading(true);
-    const result = await generatePerformanceReview(settings.apiKey, {
+    const result = await generatePerformanceReview({
       topic: topic,
       confidence: reflectionConfidence,
       confusion: reflectionText
     });
-    setCoachingResult(result);
+    setCoachingResult(result as { diagnosis: string; technique: string; technique_description: string; action_plan: string[]; });
     setCoachingLoading(false);
   };
 
@@ -112,16 +112,6 @@ export const QuizPanel: React.FC = () => {
       </button>
     </div>
   );
-
-  if (!settings.apiKey) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full text-center p-4">
-        <Icons.Settings className="text-gray-400 mb-2" size={32} />
-        <h3 className="font-bold text-gray-700">API Key Required</h3>
-        <p className="text-xs text-gray-500 mb-4">Please configure your Gemini API Key in Settings to generate quizzes.</p>
-      </div>
-    );
-  }
 
   return (
     <div className="flex flex-col h-full">

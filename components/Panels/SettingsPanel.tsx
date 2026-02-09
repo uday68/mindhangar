@@ -6,6 +6,9 @@ import { Icons } from '../Icons';
 export const SettingsPanel: React.FC = () => {
   const { settings, updateSettings, userStats, resetLayout, user, toggleMarketingMode } = useStore();
   const [testStatus, setTestStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const aiProvider = settings.aiProvider || 'auto';
+  const ollamaBaseUrl = settings.ollamaBaseUrl || 'http://localhost:11434';
+  const ollamaModel = settings.ollamaModel || 'llama3.1';
   
   // Feedback State
   const [rating, setRating] = useState(0);
@@ -13,9 +16,14 @@ export const SettingsPanel: React.FC = () => {
   const [feedbackSent, setFeedbackSent] = useState(false);
 
   const handleTestConnection = async () => {
-    if (!settings.apiKey) return;
+    if (aiProvider === 'gemini' && !settings.apiKey) return;
     setTestStatus('loading');
-    const isWorking = await testConnection(settings.apiKey);
+    const isWorking = await testConnection({
+      apiKey: settings.apiKey,
+      provider: aiProvider,
+      ollamaBaseUrl,
+      ollamaModel
+    });
     setTestStatus(isWorking ? 'success' : 'error');
     
     // Auto reset success message after 3 seconds
@@ -113,27 +121,26 @@ export const SettingsPanel: React.FC = () => {
         <div className="space-y-3">
           <div>
             <div className="flex justify-between items-center mb-1">
-                <label className="text-[10px] uppercase font-bold text-gray-400">Gemini API Key</label>
+                <label className="text-[10px] uppercase font-bold text-gray-400">Provider</label>
                 {testStatus === 'success' && <span className="text-[10px] font-bold text-green-600 animate-in fade-in">Connection Verified</span>}
                 {testStatus === 'error' && <span className="text-[10px] font-bold text-red-500 animate-in fade-in">Connection Failed</span>}
             </div>
             <div className="relative flex gap-2">
               <div className="relative flex-1">
-                <input 
-                    type="password"
-                    value={settings.apiKey}
-                    onChange={(e) => updateSettings({ apiKey: e.target.value })}
-                    placeholder="Paste key starting with AIza..."
-                    className={`w-full bg-white border rounded-lg pl-3 pr-8 py-2 text-xs focus:ring-2 focus:ring-indigo-500 outline-none transition-colors ${testStatus === 'error' ? 'border-red-300' : 'border-gray-200'}`}
-                />
-                <div 
-                    className={`absolute right-2 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full ${settings.apiKey && settings.apiKey.length > 20 ? 'bg-green-500' : 'bg-gray-300'}`} 
-                    title={settings.apiKey ? "Key format valid" : "Key missing"} 
-                />
+                <select
+                  value={aiProvider}
+                  onChange={(e) => updateSettings({ aiProvider: e.target.value as typeof settings.aiProvider })}
+                  className={`w-full bg-white border rounded-lg pl-3 pr-8 py-2 text-xs focus:ring-2 focus:ring-indigo-500 outline-none transition-colors ${testStatus === 'error' ? 'border-red-300' : 'border-gray-200'}`}
+                >
+                  <option value="auto">Auto (recommended)</option>
+                  <option value="huggingface">Hugging Face (free)</option>
+                  <option value="ollama">Ollama (local)</option>
+                  <option value="gemini">Gemini (API key)</option>
+                </select>
               </div>
               <button 
                 onClick={handleTestConnection}
-                disabled={!settings.apiKey || testStatus === 'loading'}
+                disabled={(aiProvider === 'gemini' && !settings.apiKey) || testStatus === 'loading'}
                 className={`px-4 rounded-lg text-xs font-bold transition-all ${
                     testStatus === 'loading' ? 'bg-gray-100 text-gray-400' :
                     testStatus === 'success' ? 'bg-green-100 text-green-700' :
@@ -146,7 +153,49 @@ export const SettingsPanel: React.FC = () => {
                  testStatus === 'error' ? 'Retry' : 'Test'}
               </button>
             </div>
-            <p className="text-[10px] text-gray-400 mt-1">Required for Chat, Summarization, and Planner. Saved locally.</p>
+            {aiProvider === 'gemini' && (
+              <div className="mt-3">
+                <div className="flex justify-between items-center mb-1">
+                  <label className="text-[10px] uppercase font-bold text-gray-400">Gemini API Key</label>
+                </div>
+                <div className="relative">
+                  <input 
+                      type="password"
+                      value={settings.apiKey}
+                      onChange={(e) => updateSettings({ apiKey: e.target.value })}
+                      placeholder="Paste key starting with AIza..."
+                      className={`w-full bg-white border rounded-lg pl-3 pr-8 py-2 text-xs focus:ring-2 focus:ring-indigo-500 outline-none transition-colors ${testStatus === 'error' ? 'border-red-300' : 'border-gray-200'}`}
+                  />
+                  <div 
+                      className={`absolute right-2 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full ${settings.apiKey && settings.apiKey.length > 20 ? 'bg-green-500' : 'bg-gray-300'}`} 
+                      title={settings.apiKey ? "Key format valid" : "Key missing"} 
+                  />
+                </div>
+              </div>
+            )}
+            {aiProvider === 'ollama' && (
+              <div className="mt-3 space-y-2">
+                <div>
+                  <label className="text-[10px] uppercase font-bold text-gray-400">Ollama Base URL</label>
+                  <input
+                    value={ollamaBaseUrl}
+                    onChange={(e) => updateSettings({ ollamaBaseUrl: e.target.value })}
+                    placeholder="http://localhost:11434"
+                    className="w-full mt-1 bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] uppercase font-bold text-gray-400">Ollama Model</label>
+                  <input
+                    value={ollamaModel}
+                    onChange={(e) => updateSettings({ ollamaModel: e.target.value })}
+                    placeholder="llama3.1"
+                    className="w-full mt-1 bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-500 outline-none"
+                  />
+                </div>
+              </div>
+            )}
+            <p className="text-[10px] text-gray-400 mt-2">Choose a free provider for prototyping or use Gemini with an API key.</p>
           </div>
         </div>
       </section>

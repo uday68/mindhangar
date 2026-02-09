@@ -40,18 +40,21 @@ export const ChatPanel: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (settings.apiKey) {
-      const session = createChatSession(settings.apiKey);
-      if (session) {
-        chatSessionRef.current = session;
-        setMessages([{ role: 'model', text: "Hi! I'm your AI study assistant. I can see your current notes and video transcript to help you better." }]);
-      } else {
-        setMessages([{ role: 'model', text: "Please configure your API Key in Settings to start chatting." }]);
-      }
-    } else {
-      setMessages([{ role: 'model', text: "Please configure your API Key in Settings to start chatting." }]);
-    }
-  }, [settings.apiKey]);
+    let isActive = true;
+    const initialize = async () => {
+      const session = await createChatSession({
+        apiKey: settings.apiKey,
+        provider: settings.aiProvider || 'auto',
+        ollamaBaseUrl: settings.ollamaBaseUrl || 'http://localhost:11434',
+        ollamaModel: settings.ollamaModel || 'llama3.1'
+      });
+      if (!isActive) return;
+      chatSessionRef.current = session;
+      setMessages([{ role: 'model', text: "Hi! I'm your AI study assistant. I can see your current notes and video transcript to help you better." }]);
+    };
+    initialize();
+    return () => { isActive = false; };
+  }, [settings.apiKey, settings.aiProvider, settings.ollamaBaseUrl, settings.ollamaModel]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

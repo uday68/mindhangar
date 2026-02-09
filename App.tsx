@@ -12,10 +12,13 @@ import { DataUsageIndicator } from './components/Shared/DataUsageIndicator';
 import { OfflineIndicator } from './components/Shared/OfflineIndicator';
 import { AIAssistantWidget } from './components/Shared/AIAssistantWidget';
 import { LanguageSelector } from './src/components/LanguageSelector';
+import { AccessibilityProvider } from './src/contexts/AccessibilityContext';
+import { AnimationProvider } from './src/contexts/AnimationContext';
 import { useStore } from './store/useStore';
 import { offlineSyncService } from './src/services/OfflineSyncService';
 import { aiAssistant } from './src/services/AIAssistantService';
 import './src/styles/mobile.css';
+import './src/styles/accessibility.css';
 
 function App() {
   const { user, showOnboarding, marketingMode, toggleMarketingMode, toggleCommandPalette, isUpgradeModalOpen, settings } = useStore();
@@ -28,14 +31,18 @@ function App() {
         console.log('✅ Offline sync service initialized');
       });
 
-      // Initialize AI Assistant - will use free Hugging Face models if no API key
-      aiAssistant.initialize(settings.apiKey).then((success) => {
+      // Initialize AI Assistant - will use free models if no API key
+      aiAssistant.initialize({
+        apiKey: settings.apiKey,
+        provider: settings.aiProvider || 'auto',
+        ollamaBaseUrl: settings.ollamaBaseUrl || 'http://localhost:11434',
+        ollamaModel: settings.ollamaModel || 'llama3.1'
+      }).then((success) => {
         if (success) {
           console.log('✅ AI Assistant initialized');
         } else {
           console.warn('⚠️ AI Assistant initialization failed, retrying with free models...');
-          // Retry without API key to use free models
-          aiAssistant.initialize().then((retrySuccess) => {
+          aiAssistant.initialize({ provider: 'huggingface' }).then((retrySuccess) => {
             if (retrySuccess) {
               console.log('✅ AI Assistant initialized with free models');
             }
@@ -61,7 +68,7 @@ function App() {
         });
       };
     }
-  }, [user, settings.apiKey]);
+  }, [user, settings.apiKey, settings.aiProvider, settings.ollamaBaseUrl, settings.ollamaModel]);
 
   // Global Keyboard Shortcuts
   useEffect(() => {
@@ -79,50 +86,76 @@ function App() {
 
   if (!user) {
     return (
-      <>
-        <LoginScreen />
-        {/* Language selector visible on login screen too */}
-        <div className="fixed top-4 right-4 z-[10000] flex items-center gap-2">
-          <LanguageSelector compact={true} className="bg-white/90 backdrop-blur-sm rounded-lg shadow-lg px-3 py-2" />
-        </div>
-      </>
+      <AccessibilityProvider>
+        <AnimationProvider>
+          <LoginScreen />
+          {/* Language selector visible on login screen too */}
+          <div className="fixed top-4 right-4 z-[10000] flex items-center gap-2">
+            <LanguageSelector compact={true} className="bg-white/90 backdrop-blur-sm rounded-lg shadow-lg px-3 py-2" />
+          </div>
+        </AnimationProvider>
+      </AccessibilityProvider>
     );
   }
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden text-gray-800 bg-gray-50">
-      {/* Top Navbar */}
-      <Navbar />
-      
-      {/* Main Content Area */}
-      <div className="flex flex-1 pt-16 overflow-hidden">
-        {/* Desktop Sidebar - Always visible on desktop */}
-        <div className="sidebar-desktop hidden md:block">
-          <Sidebar />
+    <AccessibilityProvider>
+      <AnimationProvider>
+        {/* Skip Links for Accessibility */}
+        <div className="skip-links">
+          <a 
+            href="#main-content" 
+            className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[10000] focus:px-4 focus:py-2 focus:bg-teal-500 focus:text-white focus:rounded-lg focus:shadow-lg"
+          >
+            Skip to main content
+          </a>
+          <a 
+            href="#navigation" 
+            className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-40 focus:z-[10000] focus:px-4 focus:py-2 focus:bg-teal-500 focus:text-white focus:rounded-lg focus:shadow-lg"
+          >
+            Skip to navigation
+          </a>
         </div>
-        
-        {/* Main Workspace */}
-        <Workspace />
-        
-        {/* Mobile Navigation - Only visible on mobile */}
-        <div className="md:hidden">
-          <MobileNav />
+
+        <div className="flex flex-col h-screen w-screen overflow-hidden text-gray-800 bg-gray-50">
+          {/* Top Navbar */}
+          <header role="banner">
+            <Navbar />
+          </header>
+          
+          {/* Main Content Area */}
+          <div className="flex flex-1 pt-16 overflow-hidden">
+            {/* Desktop Sidebar - Always visible on desktop */}
+            <nav id="navigation" aria-label="Main navigation" className="sidebar-desktop hidden md:block">
+              <Sidebar />
+            </nav>
+            
+            {/* Main Workspace */}
+            <main id="main-content" tabIndex={-1} className="flex-1">
+              <Workspace />
+            </main>
+            
+            {/* Mobile Navigation - Only visible on mobile */}
+            <nav aria-label="Mobile navigation" className="md:hidden">
+              <MobileNav />
+            </nav>
+          </div>
+          
+          {/* Mobile Language Selector - Only on mobile */}
+          <div className="md:hidden fixed top-20 right-4 z-[60]">
+            <LanguageSelector compact={true} className="bg-white/90 backdrop-blur-sm rounded-lg shadow-lg px-3 py-2" />
+          </div>
+          
+          <DataUsageIndicator />
+          <OfflineIndicator />
+          <AIAssistantWidget />
+          <CommandPalette />
+          {isUpgradeModalOpen && <UpgradeModal />}
+          {showOnboarding && <AIGuidedOnboarding />}
+          {marketingMode && <KaggleThumbnail onClose={toggleMarketingMode} />}
         </div>
-      </div>
-      
-      {/* Mobile Language Selector - Only on mobile */}
-      <div className="md:hidden fixed top-20 right-4 z-[60]">
-        <LanguageSelector compact={true} className="bg-white/90 backdrop-blur-sm rounded-lg shadow-lg px-3 py-2" />
-      </div>
-      
-      <DataUsageIndicator />
-      <OfflineIndicator />
-      <AIAssistantWidget />
-      <CommandPalette />
-      {isUpgradeModalOpen && <UpgradeModal />}
-      {showOnboarding && <AIGuidedOnboarding />}
-      {marketingMode && <KaggleThumbnail onClose={toggleMarketingMode} />}
-    </div>
+      </AnimationProvider>
+    </AccessibilityProvider>
   );
 }
 
