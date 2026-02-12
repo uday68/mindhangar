@@ -1,5 +1,5 @@
 
-export type PanelType = 'search' | 'video' | 'notes' | 'planner' | 'quiz' | 'focus' | 'chat' | 'notifications' | 'settings' | 'dashboard' | 'analytics' | 'progress' | 'predictions';
+export type PanelType = 'search' | 'video' | 'notes' | 'planner' | 'quiz' | 'focus' | 'chat' | 'notifications' | 'settings' | 'dashboard' | 'analytics' | 'progress' | 'predictions' | 'devtools';
 
 export interface PanelState {
   id: PanelType;

@@ -125,6 +125,7 @@ export const LAYOUT_PRESETS: Record<string, {
       analytics: { id: 'analytics', x: 380, y: 20, width: 640, height: 500, isOpen: false },
       progress: { id: 'progress', x: 1040, y: 20, width: 340, height: 500, isOpen: false },
       predictions: { id: 'predictions', x: 380, y: 540, width: 640, height: 320, isOpen: false },
+      devtools: { id: 'devtools', x: 100, y: 50, width: 900, height: 700, isOpen: false },
     }
   },
   'Cinema': {
@@ -144,6 +145,7 @@ export const LAYOUT_PRESETS: Record<string, {
       analytics: { id: 'analytics', x: 380, y: 20, width: 640, height: 500, isOpen: false },
       progress: { id: 'progress', x: 1040, y: 20, width: 340, height: 500, isOpen: false },
       predictions: { id: 'predictions', x: 380, y: 540, width: 640, height: 320, isOpen: false },
+      devtools: { id: 'devtools', x: 100, y: 50, width: 900, height: 700, isOpen: false },
     }
   },
   'Research': {
@@ -163,6 +165,7 @@ export const LAYOUT_PRESETS: Record<string, {
       analytics: { id: 'analytics', x: 380, y: 20, width: 640, height: 500, isOpen: false },
       progress: { id: 'progress', x: 1040, y: 20, width: 340, height: 500, isOpen: false },
       predictions: { id: 'predictions', x: 380, y: 540, width: 640, height: 320, isOpen: false },
+      devtools: { id: 'devtools', x: 100, y: 50, width: 900, height: 700, isOpen: false },
     }
   },
   'AI Learning': {
@@ -182,6 +185,7 @@ export const LAYOUT_PRESETS: Record<string, {
       quiz: { id: 'quiz', x: 450, y: 100, width: 500, height: 600, isOpen: false },
       notifications: { id: 'notifications', x: 1040, y: 20, width: 320, height: 400, isOpen: false },
       settings: { id: 'settings', x: 480, y: 150, width: 400, height: 550, isOpen: false },
+      devtools: { id: 'devtools', x: 100, y: 50, width: 900, height: 700, isOpen: false },
     }
   }
 };

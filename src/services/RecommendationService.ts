@@ -15,11 +15,12 @@ import { contentRecommenderModel } from './ai/ContentRecommenderModel';
 import { performancePredictionModel } from './ai/PerformancePredictionModel';
 import { contentService } from './ContentService';
 import type { 
-  Content, 
+  Content,
+  ContentRecommendation,
   UserActivity, 
   UserProfile, 
-  Recommendation,
-  RecommendationType 
+  RecommendationType,
+  LearningGap
 } from './ai/ContentRecommenderModel';
 import type { Subject } from './ai/EducationalContentModel';
 
@@ -31,16 +32,16 @@ class RecommendationService {
     userId: string,
     type: RecommendationType,
     limit: number = 10
-  ): Promise<Recommendation[]> {
+  ): Promise<ContentRecommendation[]> {
     try {
       // Get user profile
       const profile = await this.getUserProfile(userId);
       
       // Get recommendations from AI model
-      const recommendations = await contentRecommenderModel.recommend(
+      const recommendations = await contentRecommenderModel.getRecommendations(
         userId,
-        type,
         limit,
+        type,
         profile
       );
 
@@ -54,7 +55,7 @@ class RecommendationService {
   /**
    * Get next content recommendations
    */
-  async getNextContent(userId: string, limit: number = 5): Promise<Recommendation[]> {
+  async getNextContent(userId: string, limit: number = 5): Promise<ContentRecommendation[]> {
     return this.getRecommendations(userId, 'next_content', limit);
   }
 
@@ -65,10 +66,10 @@ class RecommendationService {
     userId: string,
     contentId: string,
     limit: number = 5
-  ): Promise<Recommendation[]> {
+  ): Promise<ContentRecommendation[]> {
     try {
       const profile = await this.getUserProfile(userId);
-      const recommendations = await contentRecommenderModel.recommendSimilar(
+      const recommendations = await contentRecommenderModel.getSimilarContent(
         contentId,
         limit,
         profile
@@ -86,7 +87,7 @@ class RecommendationService {
   async getDifficultyAdjustedContent(
     userId: string,
     limit: number = 5
-  ): Promise<Recommendation[]> {
+  ): Promise<ContentRecommendation[]> {
     return this.getRecommendations(userId, 'difficulty_adjusted', limit);
   }
 
@@ -97,14 +98,13 @@ class RecommendationService {
     userId: string,
     subject: Subject,
     limit: number = 10
-  ): Promise<Recommendation[]> {
+  ): Promise<ContentRecommendation[]> {
     try {
       const profile = await this.getUserProfile(userId);
-      const recommendations = await contentRecommenderModel.recommendForExam(
+      const recommendations = await contentRecommenderModel.getExamPrepRecommendations(
         userId,
         subject,
-        limit,
-        profile
+        limit
       );
       return recommendations;
     } catch (error) {
@@ -116,7 +116,7 @@ class RecommendationService {
   /**
    * Get gap-filling recommendations based on learning gaps
    */
-  async getGapFillingContent(userId: string, limit: number = 5): Promise<Recommendation[]> {
+  async getGapFillingContent(userId: string, limit: number = 5): Promise<ContentRecommendation[]> {
     try {
       // Get learning gaps from performance prediction model
       const gaps = await performancePredictionModel.identifyLearningGaps(userId);
@@ -128,11 +128,10 @@ class RecommendationService {
 
       // Get recommendations for filling gaps
       const profile = await this.getUserProfile(userId);
-      const recommendations = await contentRecommenderModel.recommendForGaps(
+      const recommendations = await contentRecommenderModel.getGapFillingRecommendations(
         userId,
         gaps,
-        limit,
-        profile
+        limit
       );
 
       return recommendations;
@@ -186,8 +185,10 @@ class RecommendationService {
         weaknesses: ['Geometry', 'Chemistry'],
         interests: ['Technology', 'Space'],
         goals: ['JEE Preparation', 'Board Exams'],
-        studyTime: 120, // minutes per day
+        averageStudyTime: 120, // minutes per day
         lastActive: new Date(),
+        completedContent: [],
+        performanceMetrics: {}
       };
     } catch (error) {
       console.error('Error getting user profile:', error);
@@ -199,10 +200,10 @@ class RecommendationService {
    * Get personalized dashboard recommendations
    */
   async getDashboardRecommendations(userId: string): Promise<{
-    nextContent: Recommendation[];
-    gapFilling: Recommendation[];
-    examPrep: Recommendation[];
-    trending: Recommendation[];
+    nextContent: ContentRecommendation[];
+    gapFilling: ContentRecommendation[];
+    examPrep: ContentRecommendation[];
+    trending: ContentRecommendation[];
   }> {
     try {
       const [nextContent, gapFilling, examPrep] = await Promise.all([
@@ -271,6 +272,174 @@ class RecommendationService {
     } catch (error) {
       console.error('Error getting recommendation analytics:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Get recommendations based on user's recent activity
+   */
+  async getRecentActivityBasedRecommendations(
+    userId: string,
+    limit: number = 5
+  ): Promise<ContentRecommendation[]> {
+    try {
+      const profile = await this.getUserProfile(userId);
+      return await contentRecommenderModel.getRecentActivityRecommendations(
+        userId,
+        limit,
+        profile
+      );
+    } catch (error) {
+      console.error('Error getting recent activity recommendations:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get personalized content feed
+   */
+  async getPersonalizedFeed(
+    userId: string,
+    page: number = 1,
+    pageSize: number = 20
+  ): Promise<{
+    items: ContentRecommendation[];
+    total: number;
+    page: number;
+    pageSize: number;
+  }> {
+    try {
+      const recommendations = await this.getRecommendations(
+        userId,
+        'next_content',
+        pageSize * page
+      );
+      
+      const startIndex = (page - 1) * pageSize;
+      const paginatedItems = recommendations.slice(startIndex, startIndex + pageSize);
+      
+      return {
+        items: paginatedItems,
+        total: recommendations.length,
+        page,
+        pageSize
+      };
+    } catch (error) {
+      console.error('Error getting personalized feed:', error);
+      return {
+        items: [],
+        total: 0,
+        page,
+        pageSize
+      };
+    }
+  }
+
+  /**
+   * Acknowledge recommendation
+   */
+  async acknowledgeRecommendation(
+    userId: string,
+    recommendationId: string
+  ): Promise<void> {
+    try {
+      await contentRecommenderModel.acknowledgeRecommendation(userId, recommendationId);
+    } catch (error) {
+      console.error('Error acknowledging recommendation:', error);
+    }
+  }
+
+  /**
+   * Dismiss recommendation
+   */
+  async dismissRecommendation(
+    userId: string,
+    recommendationId: string
+  ): Promise<void> {
+    try {
+      await contentRecommenderModel.dismissRecommendation(userId, recommendationId);
+    } catch (error) {
+      console.error('Error dismissing recommendation:', error);
+    }
+  }
+
+  /**
+   * Get recommendations by topic
+   */
+  async getRecommendationsByTopic(
+    userId: string,
+    topic: string,
+    limit: number = 5
+  ): Promise<ContentRecommendation[]> {
+    try {
+      const profile = await this.getUserProfile(userId);
+      return await contentRecommenderModel.getRecommendationsByTopic(
+        userId,
+        topic,
+        limit,
+        profile
+      );
+    } catch (error) {
+      console.error('Error getting recommendations by topic:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get trending content
+   */
+  async getTrendingContent(
+    subject?: Subject,
+    limit: number = 10
+  ): Promise<ContentRecommendation[]> {
+    try {
+      return await contentRecommenderModel.getTrendingContent(subject, limit);
+    } catch (error) {
+      console.error('Error getting trending content:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get recommendations for group study
+   */
+  async getGroupStudyRecommendations(
+    userIds: string[],
+    limit: number = 10
+  ): Promise<ContentRecommendation[]> {
+    try {
+      const profiles = await Promise.all(
+        userIds.map(userId => this.getUserProfile(userId))
+      );
+      return await contentRecommenderModel.getGroupRecommendations(profiles, limit);
+    } catch (error) {
+      console.error('Error getting group study recommendations:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Batch track multiple interactions
+   */
+  async batchTrackInteractions(
+    interactions: Array<{
+      userId: string;
+      contentId: string;
+      action: 'view' | 'complete' | 'like' | 'bookmark';
+      score?: number;
+      timeSpent?: number;
+    }>
+  ): Promise<void> {
+    try {
+      const activities: UserActivity[] = interactions.map(interaction => ({
+        ...interaction,
+        timeSpent: interaction.timeSpent || 0,
+        timestamp: new Date()
+      }));
+      
+      await contentRecommenderModel.batchTrackInteractions(activities);
+    } catch (error) {
+      console.error('Error batch tracking interactions:', error);
     }
   }
 }

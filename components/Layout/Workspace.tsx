@@ -23,6 +23,8 @@ import { DashboardPanel } from '../Panels/DashboardPanel';
 import { AnalyticsPanel } from '../Panels/AnalyticsPanel';
 import { ProgressPanel } from '../Panels/ProgressPanel';
 import { PredictionsPanel } from '../Panels/PredictionsPanel';
+// Developer Tools
+import { DeveloperToolsPanel } from '../Panels/DeveloperToolsPanel';
 
 const PanelContentMap: Record<PanelType, React.FC> = {
   search: SearchPanel,
@@ -38,6 +40,7 @@ const PanelContentMap: Record<PanelType, React.FC> = {
   analytics: AnalyticsPanel,
   progress: ProgressPanel,
   predictions: PredictionsPanel,
+  devtools: DeveloperToolsPanel,
 };
 
 const PanelIconMap: Record<PanelType, any> = {
@@ -54,6 +57,7 @@ const PanelIconMap: Record<PanelType, any> = {
   analytics: <Icons.BarChart size={18} />,
   progress: <Icons.TrendingUp size={18} />,
   predictions: <Icons.Zap size={18} />,
+  devtools: <Icons.Code size={18} />,
 };
 
 const PanelTitleMap: Record<PanelType, string> = {
@@ -70,6 +74,7 @@ const PanelTitleMap: Record<PanelType, string> = {
   analytics: "Learning Analytics",
   progress: "My Progress",
   predictions: "Performance Insights",
+  devtools: "Developer Tools",
 };
 
 export const Workspace: React.FC = () => {
