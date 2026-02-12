@@ -58,6 +58,7 @@ export const Sidebar: React.FC = () => {
       {/* Main Nav */}
       <div className="flex-1 flex flex-col gap-4 w-full items-center pt-4">
         <NavItem id="search" icon={Icons.Search} label="Search" />
+        <NavItem id="courses" icon={Icons.BookOpen} label="My Courses" />
         <NavItem id="planner" icon={Icons.Calendar} label="Planner" />
         <NavItem id="notes" icon={Icons.FileText} label="Notes" />
         <NavItem id="video" icon={Icons.Video} label="Video Studio" />

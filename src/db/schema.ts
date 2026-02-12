@@ -111,6 +111,57 @@ export const offlineCache = sqliteTable('offline_cache', {
   lastAccessedAt: integer('last_accessed_at', { mode: 'timestamp' }).notNull()
 });
 
+// Courses table for YouTube-based courses
+export const courses = sqliteTable('courses', {
+  id: text('id').primaryKey(),
+  title: text('title').notNull(),
+  description: text('description'),
+  level: text('level').notNull(), // 'beginner', 'intermediate', 'advanced', 'research'
+  userId: text('user_id').notNull().references(() => users.id),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull()
+});
+
+// Course videos table
+export const courseVideos = sqliteTable('course_videos', {
+  id: text('id').primaryKey(),
+  courseId: text('course_id').notNull().references(() => courses.id),
+  videoId: text('video_id').notNull(), // YouTube video ID
+  order: integer('order').notNull(),
+  title: text('title').notNull(),
+  duration: integer('duration'), // in seconds
+  transcript: text('transcript'),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull()
+});
+
+// Course user progress table
+export const courseUserProgress = sqliteTable('course_user_progress', {
+  id: text('id').primaryKey(),
+  userId: text('user_id').notNull().references(() => users.id),
+  courseId: text('course_id').notNull().references(() => courses.id),
+  videoId: text('video_id').notNull(),
+  completed: integer('completed').notNull().default(0), // 0 or 1
+  completedAt: integer('completed_at', { mode: 'timestamp' })
+});
+
+// Quizzes table
+export const quizzes = sqliteTable('quizzes', {
+  id: text('id').primaryKey(),
+  courseId: text('course_id').notNull().references(() => courses.id),
+  questionsJson: text('questions_json').notNull(), // JSON array of questions
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull()
+});
+
+// Quiz attempts table
+export const quizAttempts = sqliteTable('quiz_attempts', {
+  id: text('id').primaryKey(),
+  userId: text('user_id').notNull().references(() => users.id),
+  quizId: text('quiz_id').notNull().references(() => quizzes.id),
+  score: real('score').notNull(),
+  answersJson: text('answers_json').notNull(), // JSON object of answers
+  attemptedAt: integer('attempted_at', { mode: 'timestamp' }).notNull()
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   progress: many(userProgress),

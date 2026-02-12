@@ -18,6 +18,7 @@ import { VideoPanel } from '../Panels/VideoPanel';
 import { FocusPanel } from '../Panels/FocusPanel';
 import { NotificationPanel } from '../Panels/NotificationPanel';
 import { SettingsPanel } from '../Panels/SettingsPanel';
+import { CoursePanel } from '../Panels/CoursePanel';
 // AI Panels
 import { DashboardPanel } from '../Panels/DashboardPanel';
 import { AnalyticsPanel } from '../Panels/AnalyticsPanel';
@@ -36,6 +37,7 @@ const PanelContentMap: Record<PanelType, React.FC> = {
   chat: ChatPanel,
   notifications: NotificationPanel,
   settings: SettingsPanel,
+  courses: CoursePanel,
   dashboard: DashboardPanel,
   analytics: AnalyticsPanel,
   progress: ProgressPanel,
@@ -53,6 +55,7 @@ const PanelIconMap: Record<PanelType, any> = {
   chat: <Icons.MessageCircle size={18} />,
   notifications: <Icons.Bell size={18} />,
   settings: <Icons.Settings size={18} />,
+  courses: <Icons.BookOpen size={18} />,
   dashboard: <Icons.LayoutDashboard size={18} />,
   analytics: <Icons.BarChart size={18} />,
   progress: <Icons.TrendingUp size={18} />,
@@ -70,6 +73,7 @@ const PanelTitleMap: Record<PanelType, string> = {
   chat: "AI Coach",
   notifications: "Notifications",
   settings: "Settings",
+  courses: "My Courses",
   dashboard: "AI Dashboard",
   analytics: "Learning Analytics",
   progress: "My Progress",
@@ -92,7 +96,7 @@ export const Workspace: React.FC = () => {
   } = useStore();
 
   const { announceToScreenReader, registerLandmark } = useAccessibility();
-  const { shouldAnimate, config, getVariant } = useAnimation();
+  const { shouldAnimate, config } = useAnimation();
 
   // Global Timer Driver
   useEffect(() => {
@@ -129,7 +133,7 @@ export const Workspace: React.FC = () => {
       scale: 1,
       transition: {
         duration: shouldAnimate ? config.duration.normal / 1000 : 0,
-        ease: 'easeOut'
+        ease: [0.4, 0, 0.2, 1] as any
       }
     },
     exit: { 
@@ -149,7 +153,7 @@ export const Workspace: React.FC = () => {
       scale: 1,
       transition: {
         duration: shouldAnimate ? config.duration.normal / 1000 : 0,
-        ease: 'easeOut'
+        ease: [0.4, 0, 0.2, 1] as any
       }
     },
     exit: { 

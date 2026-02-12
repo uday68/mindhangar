@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import { I18nProvider } from './src/contexts/I18nContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import './src/styles/design-tokens.css';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {

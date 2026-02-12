@@ -239,6 +239,7 @@ npm run db:studio    # Visual database management
 Create a `.env` file in the root directory:
 ```env
 GEMINI_API_KEY=your_gemini_api_key_here
+OMDB_API_KEY=your_omdb_api_key_here
 VITE_APP_NAME=MindHangar AI for Bharat
 VITE_APP_VERSION=1.0.0
 ```
