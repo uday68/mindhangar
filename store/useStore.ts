@@ -225,11 +225,30 @@ export const useStore = create<AppState>()(
         try {
           const user = await authService.login(provider);
           
+          // Check if user has existing profile in database
+          let hasProfile = false;
+          try {
+            // Try to get user from database to check if profile exists
+            const existingUser: any = await dbQueries.users.findById(user.id);
+            if (existingUser && existingUser.grade) {
+              hasProfile = true;
+              // Load existing profile data into user object
+              user.profile = {
+                academicLevel: existingUser.grade || '',
+                major: existingUser.educationalBoard || '',
+                keyGoals: [],
+                mobilePaired: false
+              };
+            }
+          } catch (error) {
+            console.log('No existing profile found, will show onboarding');
+          }
+          
           set({
             isLoadingAuth: false,
             // START COMMERCIAL CHANGE: Defaults to Free tier to show upgrade flow
             user: { ...user, isPro: false }, 
-            showOnboarding: true,
+            showOnboarding: !hasProfile, // Only show onboarding if no profile exists
             settings: { ...get().settings, username: user.name }
           });
         } catch (error) {
@@ -249,13 +268,11 @@ export const useStore = create<AppState>()(
         if (!state.user) return;
 
         try {
-          // Save profile to database
-          await dbQueries.learnerProfiles.create(state.user.id, profile);
-          
-          // Update user in database
+          // Update user in database with profile information
           await dbQueries.users.update(state.user.id, {
             ...state.user,
-            profile,
+            grade: profile.academicLevel,
+            educationalBoard: profile.major,
           });
 
           // Update Zustand state

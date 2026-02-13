@@ -39,6 +39,31 @@ export const ChatPanel: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Welcome message with user name and profile
+  const getWelcomeMessage = () => {
+    const userName = user?.name || 'there';
+    const grade = user?.profile?.academicLevel || '';
+    const major = user?.profile?.major || '';
+    
+    let greeting = `Hi ${userName}! 👋 I'm your AI study assistant.`;
+    
+    if (grade && major) {
+      greeting += `\n\nI see you're studying ${major} at ${grade} level.`;
+    } else if (grade) {
+      greeting += `\n\nI see you're at ${grade} level.`;
+    }
+    
+    greeting += `\n\nI can help you with:
+✅ Understanding difficult concepts
+✅ Solving problems step-by-step
+✅ Creating study plans
+✅ Answering questions about your courses
+
+How can I help you today?`;
+    
+    return greeting;
+  };
+
   useEffect(() => {
     let isActive = true;
     const initialize = async () => {
@@ -50,11 +75,11 @@ export const ChatPanel: React.FC = () => {
       });
       if (!isActive) return;
       chatSessionRef.current = session;
-      setMessages([{ role: 'model', text: "Hi! I'm your AI study assistant. I can see your current notes and video transcript to help you better." }]);
+      setMessages([{ role: 'model', text: getWelcomeMessage() }]);
     };
     initialize();
     return () => { isActive = false; };
-  }, [settings.apiKey, settings.aiProvider, settings.ollamaBaseUrl, settings.ollamaModel]);
+  }, [settings.apiKey, settings.aiProvider, settings.ollamaBaseUrl, settings.ollamaModel, user?.name, user?.profile]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -190,15 +215,29 @@ export const ChatPanel: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-full relative">
-      <div className="flex-1 overflow-y-auto space-y-4 pr-2 pb-20">
+    <div className="flex flex-col h-full bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 px-4 py-3">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-teal-400 to-indigo-500 rounded-full flex items-center justify-center">
+            <Icons.Sparkles size={20} className="text-white" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-gray-900">AI Study Assistant</h3>
+            <p className="text-xs text-gray-500">Always here to help</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((msg, idx) => (
           <div key={idx} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
             <div 
-              className={`max-w-[85%] rounded-2xl p-3 text-sm leading-relaxed relative group shadow-sm ${
+              className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed relative group shadow-sm ${
                 msg.role === 'user' 
-                  ? 'bg-teal-600 text-white rounded-br-none' 
-                  : 'bg-white border border-gray-100 text-gray-700 rounded-bl-none'
+                  ? 'bg-teal-500 text-white rounded-br-none' 
+                  : 'bg-white border border-gray-200 text-gray-700 rounded-bl-none'
               }`}
             >
               {msg.image && (
@@ -232,7 +271,7 @@ export const ChatPanel: React.FC = () => {
         ))}
         {loading && (
           <div className="flex justify-start">
-             <div className="bg-white border border-gray-100 rounded-2xl rounded-bl-none px-4 py-3 shadow-sm flex gap-1">
+             <div className="bg-white border border-gray-200 rounded-2xl rounded-bl-none px-4 py-3 shadow-sm flex gap-1">
                 <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
                 <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-75" />
                 <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-150" />
@@ -242,61 +281,61 @@ export const ChatPanel: React.FC = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="mt-auto bg-white/80 backdrop-blur pt-2 border-t border-gray-100">
-        {/* Context Badge (Commercial Feature) */}
+      {/* Footer */}
+      <div className="bg-white border-t border-gray-200 p-4">
+        {/* Context Badge */}
         {(currentTranscript || activePageId) && (
-          <div className="px-2 pb-2 flex items-center gap-2">
-             <span className="text-[9px] font-bold text-teal-600 bg-teal-50 px-2 py-0.5 rounded-full flex items-center gap-1 border border-teal-100">
-                <Icons.Sparkles size={8} /> Context Aware Active
+          <div className="mb-3 flex items-center gap-2">
+             <span className="text-xs font-medium text-teal-600 bg-teal-50 px-3 py-1 rounded-full flex items-center gap-1.5 border border-teal-200">
+                <Icons.Sparkles size={12} /> Context Aware
              </span>
-             {currentTranscript && <span className="text-[9px] text-gray-400">Reading Video</span>}
+             {currentTranscript && <span className="text-xs text-gray-500">Reading Video</span>}
           </div>
         )}
 
         {/* Attachment Preview */}
         {attachment && (
-          <div className="px-2 pb-2 flex items-center">
-            <div className="relative group bg-gray-50 rounded-lg p-2 border border-gray-200 flex items-center gap-3">
+          <div className="mb-3">
+            <div className="relative group bg-gray-50 rounded-lg p-3 border border-gray-200 flex items-center gap-3">
               {attachment.type === 'image' ? (
-                <img src={attachment.preview} alt="Preview" className="h-10 w-10 object-cover rounded shadow-sm" />
+                <img src={attachment.preview} alt="Preview" className="h-12 w-12 object-cover rounded shadow-sm" />
               ) : (
-                <div className="h-10 w-10 bg-indigo-100 text-indigo-600 rounded flex items-center justify-center">
+                <div className="h-12 w-12 bg-indigo-100 text-indigo-600 rounded flex items-center justify-center">
                   <Icons.FileText size={20} />
                 </div>
               )}
-              <div className="flex flex-col">
-                <span className="text-xs font-bold text-gray-700 truncate max-w-[150px]">{attachment.file.name}</span>
-                <span className="text-[10px] text-gray-400 uppercase">{attachment.file.type || 'File'}</span>
+              <div className="flex-1">
+                <span className="text-sm font-medium text-gray-700 truncate block">{attachment.file.name}</span>
+                <span className="text-xs text-gray-500 uppercase">{attachment.file.type || 'File'}</span>
               </div>
               <button 
                 onClick={() => { setAttachment(null); if(fileInputRef.current) fileInputRef.current.value = ''; }}
-                className="ml-2 text-gray-400 hover:text-red-500"
+                className="text-gray-400 hover:text-red-500"
               >
-                <Icons.X size={16} />
+                <Icons.X size={18} />
               </button>
             </div>
           </div>
         )}
 
-        <div className="flex items-center gap-2 mb-2 px-1">
-           {isSpeaking && (
-              <div className="flex-1 bg-indigo-50 border border-indigo-100 rounded-lg p-2 flex justify-between items-center animate-in slide-in-from-bottom-2">
-                 <div className="flex gap-1 items-center">
-                   <div className="w-1 h-3 bg-indigo-400 animate-pulse"></div>
-                   <div className="w-1 h-5 bg-indigo-500 animate-pulse delay-75"></div>
-                   <div className="w-1 h-2 bg-indigo-400 animate-pulse delay-150"></div>
-                   <span className="text-xs text-indigo-700 ml-2 font-medium">Reading...</span>
-                 </div>
-                 <button onClick={stopSpeaking} className="text-xs text-red-500 font-bold px-2 hover:bg-red-50 rounded">Stop</button>
-              </div>
-           )}
-        </div>
+        {/* Speaking Indicator */}
+        {isSpeaking && (
+          <div className="mb-3 bg-indigo-50 border border-indigo-200 rounded-lg p-3 flex justify-between items-center">
+            <div className="flex gap-1.5 items-center">
+              <div className="w-1 h-3 bg-indigo-400 animate-pulse"></div>
+              <div className="w-1 h-5 bg-indigo-500 animate-pulse delay-75"></div>
+              <div className="w-1 h-2 bg-indigo-400 animate-pulse delay-150"></div>
+              <span className="text-sm text-indigo-700 ml-2 font-medium">Reading aloud...</span>
+            </div>
+            <button onClick={stopSpeaking} className="text-sm text-red-500 font-medium px-3 py-1 hover:bg-red-50 rounded-lg">Stop</button>
+          </div>
+        )}
 
-        <form onSubmit={handleSend} className="relative flex gap-2 items-center">
+        {/* Input Form */}
+        <form onSubmit={handleSend} className="flex gap-2 items-center">
           <input 
             type="file" 
             ref={fileInputRef}
-            // Accept images AND standard text/code formats
             accept="image/*, .txt, .md, .csv, .json, .js, .jsx, .ts, .tsx, .py, .java, .c, .cpp, .html, .css, .vtt, .srt"
             className="hidden"
             onChange={handleFileSelect}
@@ -305,10 +344,9 @@ export const ChatPanel: React.FC = () => {
           <button 
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className={`p-3 rounded-xl transition-colors ${attachment ? 'text-teal-600 bg-teal-50' : 'text-gray-400 hover:text-teal-600 hover:bg-gray-100'}`}
+            className={`p-3 rounded-xl transition-colors ${attachment ? 'text-teal-600 bg-teal-50 border border-teal-200' : 'text-gray-400 hover:text-teal-600 hover:bg-gray-50 border border-gray-200'}`}
             title="Attach Image or File"
           >
-            {/* Paperclip Icon */}
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
           </button>
 
@@ -317,14 +355,14 @@ export const ChatPanel: React.FC = () => {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             disabled={loading}
-            placeholder={settings.apiKey ? (attachment ? "Type instructions..." : "Ask Gemini...") : "Enter API Key..."}
-            className="flex-1 bg-gray-50 border border-gray-200 px-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 shadow-inner disabled:opacity-50"
+            placeholder={settings.apiKey ? (attachment ? "Type instructions..." : "Ask me anything...") : "Enter API Key in Settings..."}
+            className="flex-1 bg-gray-50 border border-gray-200 px-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent disabled:opacity-50"
           />
           
           <button 
             type="submit"
             disabled={(!input.trim() && !attachment) || loading || !settings.apiKey}
-            className="p-3 bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-all disabled:opacity-50 disabled:bg-gray-300 shadow-lg shadow-teal-100"
+            className="p-3 bg-teal-500 text-white rounded-xl hover:bg-teal-600 transition-all disabled:opacity-50 disabled:bg-gray-300 shadow-sm"
           >
             <Icons.Check size={20} />
           </button>

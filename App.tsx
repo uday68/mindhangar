@@ -5,6 +5,7 @@ import { MobileNav } from './components/Layout/MobileNav';
 import { Workspace } from './components/Layout/Workspace';
 import { LoginScreen } from './components/Auth/LoginScreen';
 import { AIGuidedOnboarding } from './components/Auth/AIGuidedOnboarding';
+import { InitialInteractionModal } from './components/Modals/InitialInteractionModal';
 import { KaggleThumbnail } from './components/Marketing/KaggleThumbnail';
 import { CommandPalette } from './components/Shared/CommandPalette';
 import { UpgradeModal } from './components/Shared/UpgradeModal';
@@ -151,7 +152,17 @@ function App() {
           <AIAssistantWidget />
           <CommandPalette />
           {isUpgradeModalOpen && <UpgradeModal />}
-          {showOnboarding && <AIGuidedOnboarding />}
+          {showOnboarding && (
+            <InitialInteractionModal 
+              onComplete={() => {
+                // Modal will handle saving data and updating store
+              }}
+              onSkip={() => {
+                // Close modal without saving, keep showOnboarding true for next login
+                useStore.setState({ showOnboarding: false });
+              }}
+            />
+          )}
           {marketingMode && <KaggleThumbnail onClose={toggleMarketingMode} />}
         </div>
       </AnimationProvider>
