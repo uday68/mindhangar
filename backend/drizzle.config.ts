@@ -1,14 +1,11 @@
 import type { Config } from 'drizzle-kit';
-import * as dotenv from 'dotenv';
-
-dotenv.config({ path: '.env.local' });
 
 export default {
   schema: './lib/db/schema.ts',
   out: './drizzle',
-  driver: 'pg',
+  dialect: 'postgresql',
   dbCredentials: {
-    connectionString: process.env.DATABASE_URL!,
+    url: process.env.DATABASE_URL || 'postgresql://user:password@localhost:5432/mindhangar',
   },
   verbose: true,
   strict: true,
