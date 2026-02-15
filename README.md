@@ -60,7 +60,7 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/mindhangar.git
+git clone https://github.com/uday68/mindhangar.git
 cd mindhangar
 
 # Install dependencies
@@ -281,7 +281,7 @@ We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guid
 
 ## 🐛 Bug Reports
 
-Found a bug? Please [open an issue](https://github.com/yourusername/mindhangar/issues/new) with:
+Found a bug? Please [open an issue](https://github.com/uday68/mindhangar/issues/new) with:
 
 - Clear description
 - Steps to reproduce
@@ -291,7 +291,7 @@ Found a bug? Please [open an issue](https://github.com/yourusername/mindhangar/i
 
 ## 💡 Feature Requests
 
-Have an idea? We'd love to hear it! [Open an issue](https://github.com/yourusername/mindhangar/issues/new) with:
+Have an idea? We'd love to hear it! [Open an issue](https://github.com/uday68/mindhangar/issues/new) with:
 
 - Feature description
 - Use case
@@ -329,7 +329,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👥 Team
 
-- **Developer**: [Your Name](https://github.com/yourusername)
+- **Developer**: [Your Name](https://github.com/uday68)
 - **Contributors**: See [CONTRIBUTORS.md](CONTRIBUTORS.md)
 
 ## 🙏 Acknowledgments
@@ -343,7 +343,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📞 Contact
 
 - **Email**: support@mindhangar.in
-- **GitHub**: [github.com/yourusername/mindhangar](https://github.com/yourusername/mindhangar)
+- **GitHub**: [github.com/uday68/mindhangar](https://github.com/uday68/mindhangar)
 - **Website**: [mindhangar.in](https://mindhangar.in)
 
 ## 🌟 Star Us!
