@@ -1,0 +1,8 @@
+{
+  "specVersion": "1.0",
+  "name": "real-authentication-backend",
+  "displayName": "Real Authentication & Backend Integration",
+  "description": "Replace mock authentication with real OAuth providers and backend API integration",
+  "createdAt": "2026-02-13T00:00:00.000Z",
+  "updatedAt": "2026-02-13T00:00:00.000Z"
+}

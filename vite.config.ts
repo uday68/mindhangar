@@ -11,6 +11,10 @@ export default defineConfig(({ mode }) => {
       port: 3000,
       host: '0.0.0.0',
     },
+    optimizeDeps: {
+      force: true,
+      include: ['react', 'react-dom', 'react-dom/client'],
+    },
     plugins: [
       tailwindcss(),
       react(),

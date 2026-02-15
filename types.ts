@@ -19,7 +19,7 @@ export interface LearnerProfile {
 }
 
 // Auth & User
-export type AuthProvider = 'google' | 'github' | 'email';
+export type AuthProvider = 'google' | 'github' | 'email' | 'credentials';
 
 export interface User {
   id: string;

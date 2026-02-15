@@ -1,20 +1,19 @@
 import { useEffect } from 'react';
-import { Navbar } from './components/Layout/Navbar';
-import { Sidebar } from './components/Layout/Sidebar';
-import { MobileNav } from './components/Layout/MobileNav';
-import { Workspace } from './components/Layout/Workspace';
-import { LoginScreen } from './components/Auth/LoginScreen';
-import { AIGuidedOnboarding } from './components/Auth/AIGuidedOnboarding';
-import { InitialInteractionModal } from './components/Modals/InitialInteractionModal';
-import { KaggleThumbnail } from './components/Marketing/KaggleThumbnail';
-import { CommandPalette } from './components/Shared/CommandPalette';
-import { UpgradeModal } from './components/Shared/UpgradeModal';
-import { DataUsageIndicator } from './components/Shared/DataUsageIndicator';
-import { OfflineIndicator } from './components/Shared/OfflineIndicator';
-import { AIAssistantWidget } from './components/Shared/AIAssistantWidget';
-import { LanguageSelector } from './src/components/LanguageSelector';
+import { Navbar } from './src/components/Layout/Navbar';
+import { Sidebar } from './src/components/Layout/Sidebar';
+import { MobileNav } from './src/components/Layout/MobileNav';
+import { Workspace } from './src/components/Layout/Workspace';
+import { LoginScreen } from './src/components/Auth/LoginScreen';
+import { InitialInteractionModal } from './src/components/Modals/InitialInteractionModal';
+import { KaggleThumbnail } from './src/components/Marketing/KaggleThumbnail';
+import { CommandPalette } from './src/components/Shared/CommandPalette';
+import { UpgradeModal } from './src/components/Shared/UpgradeModal';
+import { DataUsageIndicator } from './src/components/Shared/DataUsageIndicator';
+import { OfflineIndicator } from './src/components/Shared/OfflineIndicator';
+import { AIAssistantWidget } from './src/components/Shared/AIAssistantWidget';
 import { AccessibilityProvider } from './src/contexts/AccessibilityContext';
 import { AnimationProvider } from './src/contexts/AnimationContext';
+import { LanguageSelector } from './src/components/LanguageSelector';
 import { useStore } from './store/useStore';
 import { offlineSyncService } from './src/services/OfflineSyncService';
 import { aiAssistant } from './src/services/AIAssistantService';
@@ -22,7 +21,12 @@ import './src/styles/mobile.css';
 import './src/styles/accessibility.css';
 
 function App() {
-  const { user, showOnboarding, marketingMode, toggleMarketingMode, toggleCommandPalette, isUpgradeModalOpen, settings } = useStore();
+  const { user, showOnboarding, marketingMode, toggleMarketingMode, toggleCommandPalette, isUpgradeModalOpen, settings, restoreSession } = useStore();
+
+  // Restore session on app initialization (for real auth)
+  useEffect(() => {
+    restoreSession();
+  }, [restoreSession]);
 
   // Initialize backend services when user logs in
   useEffect(() => {

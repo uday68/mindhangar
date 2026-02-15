@@ -1,0 +1,21 @@
+{
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "regions": ["bom1"],
+  "env": {
+    "NODE_ENV": "production"
+  },
+  "build": {
+    "env": {
+      "NEXTAUTH_URL": "@nextauth_url",
+      "NEXTAUTH_SECRET": "@nextauth_secret",
+      "DATABASE_URL": "@database_url",
+      "DIRECT_URL": "@direct_url",
+      "FRONTEND_URL": "@frontend_url",
+      "JWT_SIGNING_KEY": "@jwt_signing_key",
+      "ENCRYPTION_KEY": "@encryption_key"
+    }
+  }
+}

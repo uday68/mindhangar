@@ -33,8 +33,9 @@ interface AppState {
   user: User | null;
   isLoadingAuth: boolean;
   showOnboarding: boolean;
-  login: (provider: AuthProvider) => Promise<void>;
+  login: (provider: AuthProvider, email?: string, password?: string) => Promise<void>;
   logout: () => void;
+  restoreSession: () => Promise<void>;
   completeOnboarding: (profile: LearnerProfile) => void;
   upgradeToPro: () => void; // Commercial
 
@@ -219,11 +220,20 @@ export const useStore = create<AppState>()(
       isLoadingAuth: false,
       showOnboarding: false,
       
-      login: async (provider) => {
+      login: async (provider, email, password) => {
         set({ isLoadingAuth: true });
         
         try {
-          const user = await authService.login(provider);
+          const result = await authService.login(provider, email, password);
+          
+          // Real auth redirects to OAuth provider (returns void)
+          // Mock auth returns user directly
+          if (!result) {
+            // Real auth - redirect happening, keep loading state
+            return;
+          }
+          
+          const user = result as User;
           
           // Check if user has existing profile in database
           let hasProfile = false;
@@ -254,13 +264,58 @@ export const useStore = create<AppState>()(
         } catch (error) {
           console.error("Login failed", error);
           set({ isLoadingAuth: false });
-          alert("Login failed. Please try again.");
+          throw error; // Re-throw so UI can handle it
         }
       },
       
       logout: async () => {
         await authService.logout();
         set({ user: null, showOnboarding: false, activePanels: createInitialPanels(), maximizedPanel: null });
+      },
+
+      restoreSession: async () => {
+        // Only restore session if using real auth and getSession is available
+        if (!authService.getSession) {
+          return;
+        }
+
+        set({ isLoadingAuth: true });
+        
+        try {
+          const user = await authService.getSession();
+          
+          if (!user) {
+            set({ isLoadingAuth: false });
+            return;
+          }
+
+          // Check if user has existing profile in database
+          let hasProfile = false;
+          try {
+            const existingUser: any = await dbQueries.users.findById(user.id);
+            if (existingUser && existingUser.grade) {
+              hasProfile = true;
+              user.profile = {
+                academicLevel: existingUser.grade || '',
+                major: existingUser.educationalBoard || '',
+                keyGoals: [],
+                mobilePaired: false
+              };
+            }
+          } catch (error) {
+            console.log('No existing profile found');
+          }
+          
+          set({
+            isLoadingAuth: false,
+            user: { ...user, isPro: false },
+            showOnboarding: !hasProfile,
+            settings: { ...get().settings, username: user.name }
+          });
+        } catch (error) {
+          console.error("Session restoration failed", error);
+          set({ isLoadingAuth: false });
+        }
       },
 
       completeOnboarding: async (profile) => {

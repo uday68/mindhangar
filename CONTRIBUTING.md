@@ -1,213 +1,405 @@
 # Contributing to MindHangar AI for Bharat
 
-Thank you for your interest in contributing to MindHangar AI for Bharat! This project aims to democratize AI-powered education for Indian students across diverse linguistic, cultural, and socioeconomic backgrounds.
+Welcome! We're excited that you want to contribute to MindHangar AI for Bharat - an AI-powered educational platform designed for Indian students.
 
-## 🌟 **Code of Conduct**
+## 📋 Table of Contents
 
-### Cultural Sensitivity
-- Respect all Indian cultures, languages, and traditions
-- Avoid stereotypes and generalizations
-- Consult with native speakers for language implementations
-- Test cultural adaptations with users from different regions
+- [Getting Started](#getting-started)
+- [Development Setup](#development-setup)
+- [Project Structure](#project-structure)
+- [Development Workflow](#development-workflow)
+- [Coding Standards](#coding-standards)
+- [Testing](#testing)
+- [Submitting Changes](#submitting-changes)
+- [Getting Help](#getting-help)
 
-### Inclusive Development
-- Consider users from rural and urban areas
-- Design for low-end devices and slow networks
-- Support multiple educational boards and systems
-- Ensure accessibility for all abilities
-
-## 🚀 **Getting Started**
+## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js 18+ installed
-- Git installed
-- Basic understanding of React, TypeScript, and Tailwind CSS
-- Familiarity with Indian education system (helpful but not required)
 
-### Development Setup
+Before you begin, ensure you have the following installed:
 
-1. **Fork and Clone**
+- **Node.js** (v18 or higher) - [Download](https://nodejs.org/)
+- **npm** (v9 or higher) - Comes with Node.js
+- **Git** - [Download](https://git-scm.com/)
+- **PostgreSQL** (optional, for backend development) - [Download](https://www.postgresql.org/)
+
+### Quick Start
+
+1. **Fork the repository**
    ```bash
-   git clone https://github.com/your-username/mindhangar-ai-for-bharat.git
-   cd mindhangar-ai-for-bharat
+   # Click the "Fork" button on GitHub
    ```
 
-2. **Install Dependencies**
+2. **Clone your fork**
    ```bash
+   git clone https://github.com/YOUR_USERNAME/mindhangar.git
+   cd mindhangar
+   ```
+
+3. **Install dependencies**
+   ```bash
+   # Frontend dependencies
    npm install
+   
+   # Backend dependencies
+   cd backend
+   npm install
+   cd ..
    ```
 
-3. **Set Up Environment Variables**
+4. **Set up environment variables**
    ```bash
+   # Frontend
    cp .env.example .env
-   # Add your Gemini API key and other credentials
+   
+   # Backend
+   cp backend/.env.example backend/.env.local
    ```
 
-4. **Start Development Server**
+5. **Start development servers**
    ```bash
+   # Terminal 1: Frontend
+   npm run dev
+   
+   # Terminal 2: Backend (optional)
+   cd backend
    npm run dev
    ```
 
-5. **Run Tests**
-   ```bash
-   npm run test
-   ```
+6. **Open your browser**
+   - Frontend: http://localhost:5173
+   - Backend: http://localhost:3000
 
-## 📝 **Development Workflow**
+## 🛠️ Development Setup
 
-### Branch Naming Convention
-- `feature/language-selector-fix` - New features
-- `bugfix/offline-mode-crash` - Bug fixes
-- `hotfix/critical-security-issue` - Critical fixes
-- `docs/api-documentation` - Documentation updates
-- `test/cultural-filter-tests` - Test additions
+### Frontend Setup
 
-### Commit Message Format
-```
-type(scope): subject
+The frontend is a React + TypeScript + Vite application.
 
-body (optional)
-
-footer (optional)
-```
-
-**Types**:
-- `feat`: New feature
-- `fix`: Bug fix
-- `docs`: Documentation changes
-- `style`: Code style changes (formatting, etc.)
-- `refactor`: Code refactoring
-- `test`: Adding or updating tests
-- `chore`: Maintenance tasks
-
-**Examples**:
-```
-feat(language): add Tamil language support
-
-- Implement Tamil translation files
-- Add Tamil script rendering
-- Test with native Tamil speakers
-
-Closes #123
-```
-
-```
-fix(offline): resolve cache invalidation issue
-
-- Fix service worker cache strategy
-- Add proper cache versioning
-- Test offline functionality on 2G network
-
-Fixes #456
-```
-
-## 🎯 **Contribution Areas**
-
-### 1. Language & Localization
-- Add new Indian language support
-- Improve existing translations
-- Fix script rendering issues
-- Add voice input/output for languages
-
-**Guidelines**:
-- Use native speakers for translations
-- Test on devices with proper font support
-- Ensure cultural appropriateness
-- Document regional variations
-
-### 2. Educational Content
-- Add CBSE/ICSE/State Board content
-- Create JEE/NEET/UPSC question banks
-- Align content with official syllabi
-- Add Indian examples and case studies
-
-**Guidelines**:
-- Verify accuracy with official sources
-- Follow exam patterns exactly
-- Include explanations in multiple languages
-- Test with actual students
-
-### 3. Performance Optimization
-- Reduce bundle size
-- Optimize for slow networks
-- Improve mobile performance
-- Implement caching strategies
-
-**Guidelines**:
-- Test on 2G/3G networks
-- Measure data usage
-- Profile on low-end devices
-- Document performance improvements
-
-### 4. Cultural Adaptation
-- Add Indian cultural references
-- Implement festival calendars
-- Create culturally appropriate examples
-- Add regional preferences
-
-**Guidelines**:
-- Research cultural context thoroughly
-- Consult with cultural experts
-- Test with users from different regions
-- Respect religious and cultural sensitivities
-
-## 🧪 **Testing Requirements**
-
-### Unit Tests
 ```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+
+# Run tests
 npm run test
+
+# Run linter
+npm run lint
 ```
 
-All new features must include unit tests:
-- Test component rendering
-- Test state management
-- Test service functions
-- Test error handling
+### Backend Setup
 
-### Integration Tests
+The backend is a Next.js 15 application with PostgreSQL database.
+
 ```bash
-npm run test:integration
+cd backend
+
+# Install dependencies
+npm install
+
+# Set up database (choose one option)
+
+# Option 1: Use Supabase (Recommended)
+# 1. Go to https://supabase.com
+# 2. Create a new project
+# 3. Copy the connection string
+# 4. Add to backend/.env.local:
+#    DATABASE_URL=postgresql://...
+
+# Option 2: Use local PostgreSQL
+# 1. Install PostgreSQL
+# 2. Create database: createdb mindhangar
+# 3. Add to backend/.env.local:
+#    DATABASE_URL=postgresql://postgres:password@localhost:5432/mindhangar
+
+# Generate database migrations
+npm run db:generate
+
+# Apply migrations to database
+npm run db:push
+
+# Start development server
+npm run dev
+
+# Open Drizzle Studio (database GUI)
+npm run db:studio
 ```
 
-Test feature interactions:
-- Language switching across components
-- Offline sync workflows
-- Multi-panel interactions
-- API integrations
+### Environment Variables
 
-### Cultural Testing
-- Test with native language speakers
-- Verify cultural appropriateness
-- Check regional variations
-- Validate educational content accuracy
+#### Frontend (.env)
 
-### Performance Testing
-- Test on 2G/3G networks
-- Measure data usage
-- Profile on low-end devices (2GB RAM)
-- Check load times
+```env
+# Required
+VITE_YOUTUBE_API_KEY=your_youtube_api_key_here
+GEMINI_API_KEY=your_gemini_api_key_here
 
-### Mobile Testing
-- Test on 4-inch screens
-- Verify touch targets (44x44px minimum)
-- Check responsive layouts
-- Test on actual Android devices
+# Optional
+VITE_USE_REAL_AUTH=false  # Set to 'true' to use real backend auth
+```
 
-## 📋 **Pull Request Process**
+#### Backend (backend/.env.local)
 
-### Before Submitting
-1. ✅ Code follows style guidelines
-2. ✅ All tests passing
-3. ✅ Documentation updated
-4. ✅ Tested on mobile devices
-5. ✅ Tested with Indian language content
-6. ✅ Cultural sensitivity verified
-7. ✅ Performance impact assessed
+```env
+# Required
+DATABASE_URL=postgresql://user:password@host:5432/database
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your_secret_key_here
 
-### PR Template
+# OAuth (Optional - for real authentication)
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+GITHUB_CLIENT_ID=your_github_client_id
+GITHUB_CLIENT_SECRET=your_github_client_secret
+```
+
+## 📁 Project Structure
+
+```
+mindhangar/
+├── backend/                 # Next.js backend
+│   ├── app/                # Next.js app directory
+│   │   ├── api/           # API routes
+│   │   └── auth/          # Auth pages
+│   ├── lib/               # Backend utilities
+│   │   ├── db/           # Database (Drizzle ORM)
+│   │   └── utils/        # Helper functions
+│   └── scripts/          # Database scripts
+│
+├── src/                    # Frontend source
+│   ├── components/        # React components
+│   │   ├── Auth/         # Authentication
+│   │   ├── Panels/       # Main panels
+│   │   ├── Modals/       # Modal dialogs
+│   │   └── ...
+│   ├── services/         # Business logic
+│   │   ├── ai/          # AI models
+│   │   ├── agents/      # AI agents
+│   │   └── ...
+│   ├── db/              # Frontend database (IndexedDB)
+│   ├── i18n/            # Internationalization
+│   ├── hooks/           # Custom React hooks
+│   ├── contexts/        # React contexts
+│   └── styles/          # CSS files
+│
+├── store/                # Zustand state management
+├── services/             # Shared services
+├── docs/                 # Documentation
+└── .kiro/               # Specs and configurations
+```
+
+## 🔄 Development Workflow
+
+### 1. Create a Branch
+
+```bash
+# Update main branch
+git checkout main
+git pull origin main
+
+# Create feature branch
+git checkout -b feature/your-feature-name
+
+# Or for bug fixes
+git checkout -b fix/bug-description
+```
+
+### 2. Make Changes
+
+- Write clean, readable code
+- Follow the coding standards (see below)
+- Add comments for complex logic
+- Update documentation if needed
+
+### 3. Test Your Changes
+
+```bash
+# Run tests
+npm run test
+
+# Test manually in browser
+npm run dev
+
+# Check for TypeScript errors
+npm run type-check
+
+# Run linter
+npm run lint
+```
+
+### 4. Commit Your Changes
+
+```bash
+# Stage changes
+git add .
+
+# Commit with descriptive message
+git commit -m "feat: add user profile editing feature"
+
+# Or for bug fixes
+git commit -m "fix: resolve login redirect issue"
+```
+
+**Commit Message Format:**
+- `feat:` New feature
+- `fix:` Bug fix
+- `docs:` Documentation changes
+- `style:` Code style changes (formatting)
+- `refactor:` Code refactoring
+- `test:` Adding tests
+- `chore:` Maintenance tasks
+
+### 5. Push and Create Pull Request
+
+```bash
+# Push to your fork
+git push origin feature/your-feature-name
+
+# Go to GitHub and create a Pull Request
+```
+
+## 📝 Coding Standards
+
+### TypeScript
+
+- Use TypeScript for all new code
+- Define proper types and interfaces
+- Avoid `any` type when possible
+- Use meaningful variable names
+
+```typescript
+// Good
+interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+}
+
+function getUserProfile(userId: string): Promise<UserProfile> {
+  // ...
+}
+
+// Bad
+function getUser(id: any): any {
+  // ...
+}
+```
+
+### React Components
+
+- Use functional components with hooks
+- Keep components small and focused
+- Extract reusable logic into custom hooks
+- Use proper prop types
+
+```typescript
+// Good
+interface ButtonProps {
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+}
+
+export const Button: React.FC<ButtonProps> = ({ label, onClick, disabled = false }) => {
+  return (
+    <button onClick={onClick} disabled={disabled}>
+      {label}
+    </button>
+  );
+};
+
+// Bad
+export const Button = (props: any) => {
+  return <button onClick={props.onClick}>{props.label}</button>;
+};
+```
+
+### File Naming
+
+- Components: `PascalCase.tsx` (e.g., `LoginScreen.tsx`)
+- Utilities: `camelCase.ts` (e.g., `authService.ts`)
+- Hooks: `useCamelCase.ts` (e.g., `useAuth.ts`)
+- Constants: `UPPER_SNAKE_CASE.ts` (e.g., `API_ENDPOINTS.ts`)
+
+### Code Organization
+
+- One component per file
+- Group related files in folders
+- Keep files under 300 lines
+- Extract complex logic into separate files
+
+## 🧪 Testing
+
+### Running Tests
+
+```bash
+# Run all tests
+npm run test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with coverage
+npm run test:coverage
+```
+
+### Writing Tests
+
+```typescript
+// Example test file: Button.test.tsx
+import { render, screen, fireEvent } from '@testing-library/react';
+import { Button } from './Button';
+
+describe('Button', () => {
+  it('renders with label', () => {
+    render(<Button label="Click me" onClick={() => {}} />);
+    expect(screen.getByText('Click me')).toBeInTheDocument();
+  });
+
+  it('calls onClick when clicked', () => {
+    const handleClick = vi.fn();
+    render(<Button label="Click me" onClick={handleClick} />);
+    
+    fireEvent.click(screen.getByText('Click me'));
+    expect(handleClick).toHaveBeenCalledOnce();
+  });
+
+  it('is disabled when disabled prop is true', () => {
+    render(<Button label="Click me" onClick={() => {}} disabled />);
+    expect(screen.getByText('Click me')).toBeDisabled();
+  });
+});
+```
+
+## 📤 Submitting Changes
+
+### Pull Request Checklist
+
+Before submitting a pull request, ensure:
+
+- [ ] Code follows the coding standards
+- [ ] All tests pass
+- [ ] No TypeScript errors
+- [ ] No linter errors
+- [ ] Documentation is updated (if needed)
+- [ ] Commit messages are clear and descriptive
+- [ ] Branch is up to date with main
+
+### Pull Request Template
+
 ```markdown
 ## Description
-Brief description of changes
+Brief description of what this PR does
 
 ## Type of Change
 - [ ] Bug fix
@@ -216,251 +408,139 @@ Brief description of changes
 - [ ] Documentation update
 
 ## Testing
-- [ ] Unit tests added/updated
-- [ ] Integration tests added/updated
-- [ ] Tested on mobile devices
-- [ ] Tested with Indian languages
-- [ ] Performance tested
-
-## Cultural Considerations
-- [ ] Culturally appropriate
-- [ ] Tested with native speakers
-- [ ] Regional variations considered
+How to test these changes
 
 ## Screenshots (if applicable)
-Add screenshots for UI changes
+Add screenshots here
 
-## Related Issues
-Closes #issue_number
+## Checklist
+- [ ] Tests pass
+- [ ] No TypeScript errors
+- [ ] Documentation updated
+- [ ] Follows coding standards
 ```
 
-### Review Process
-1. Automated tests run
-2. Code review by maintainers
-3. Cultural sensitivity review (if applicable)
-4. Performance review (if applicable)
-5. Approval and merge
+## 🐛 Reporting Bugs
 
-## 🎨 **Code Style Guidelines**
+### Before Reporting
 
-### TypeScript
-- Use TypeScript for all new code
-- Define proper interfaces and types
-- Avoid `any` type
-- Use meaningful variable names
+1. Check if the bug has already been reported
+2. Try to reproduce the bug
+3. Gather relevant information
 
-```typescript
-// Good
-interface UserProfile {
-  id: string
-  name: string
-  preferredLanguage: string
-}
+### Bug Report Template
 
-// Bad
-const data: any = {}
+```markdown
+## Bug Description
+Clear description of the bug
+
+## Steps to Reproduce
+1. Go to '...'
+2. Click on '...'
+3. See error
+
+## Expected Behavior
+What should happen
+
+## Actual Behavior
+What actually happens
+
+## Environment
+- OS: [e.g., Windows 11]
+- Browser: [e.g., Chrome 120]
+- Node version: [e.g., 18.17.0]
+
+## Screenshots
+Add screenshots if applicable
+
+## Additional Context
+Any other relevant information
 ```
 
-### React Components
-- Use functional components with hooks
-- Keep components small and focused
-- Use proper prop types
-- Add JSDoc comments for complex components
+## 💡 Feature Requests
 
-```typescript
-/**
- * Language selector component for Indian languages
- * Supports 8 Indian languages with regional scripts
- */
-export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ onSelect }) => {
-  // Component implementation
-}
-```
+We welcome feature requests! Please:
 
-### CSS/Tailwind
-- Use Tailwind utility classes
-- Follow mobile-first approach
-- Ensure minimum touch target size (44x44px)
-- Test on small screens
+1. Check if the feature has already been requested
+2. Describe the feature clearly
+3. Explain why it would be useful
+4. Provide examples if possible
 
-```tsx
-// Good - Mobile-first, accessible
-<button className="w-12 h-12 md:w-10 md:h-10 text-lg">
-  Click
-</button>
-
-// Bad - Too small for mobile
-<button className="w-6 h-6 text-xs">
-  Click
-</button>
-```
-
-### File Organization
-```
-src/
-├── components/
-│   ├── Layout/
-│   ├── Panels/
-│   ├── Shared/
-│   └── Auth/
-├── services/
-│   ├── LanguageEngine.ts
-│   ├── CulturalFilter.ts
-│   └── CurriculumAdapter.ts
-├── hooks/
-│   ├── useLanguage.ts
-│   └── useOffline.ts
-├── types/
-│   └── index.ts
-├── data/
-│   ├── indian-festivals.json
-│   └── cbse-syllabus.json
-└── i18n/
-    └── messages/
-```
-
-## 🌍 **Localization Guidelines**
+## 🌍 Internationalization (i18n)
 
 ### Adding a New Language
 
-1. **Create Translation File**
+1. Create translation file:
    ```bash
-   # Create new language file
-   touch src/i18n/messages/pa.json  # Punjabi example
+   cp src/i18n/messages/en.json src/i18n/messages/[language-code].json
    ```
 
-2. **Add Translations**
-   ```json
-   {
-     "app.title": "ਮਾਈਂਡਹੈਂਗਰ ਏਆਈ ਫਾਰ ਭਾਰਤ",
-     "welcome.message": "ਸਵਾਗਤ ਹੈ",
-     ...
-   }
-   ```
+2. Translate all strings in the new file
 
-3. **Update Language List**
+3. Add language to supported languages:
    ```typescript
    // src/i18n/index.ts
-   export const SUPPORTED_LANGUAGES = [
-     { code: 'pa', name: 'ਪੰਜਾਬੀ', script: 'Gurmukhi' },
-     ...
-   ]
+   export const SUPPORTED_LANGUAGES = {
+     // ... existing languages
+     [code]: 'Language Name',
+   };
    ```
 
-4. **Test with Native Speakers**
-   - Verify translations are accurate
-   - Check cultural appropriateness
-   - Test script rendering
+4. Test the new language in the app
 
-### Translation Best Practices
-- Use formal language for educational content
-- Maintain consistent terminology
-- Provide context for translators
-- Test on actual devices with proper fonts
+### Translation Guidelines
 
-## 🐛 **Bug Reports**
+- Keep translations natural and culturally appropriate
+- Maintain the same tone as English version
+- Use placeholders for dynamic content: `{name}`
+- Test with actual UI to ensure text fits
 
-### Before Reporting
-1. Check if issue already exists
-2. Test on latest version
-3. Gather reproduction steps
-4. Collect device/network information
+## 🎨 UI/UX Guidelines
 
-### Bug Report Template
-```markdown
-**Description**
-Clear description of the bug
+- Follow the existing design system
+- Ensure accessibility (WCAG 2.1 AA)
+- Test on mobile devices
+- Support offline functionality
+- Optimize for low bandwidth
 
-**Steps to Reproduce**
-1. Go to...
-2. Click on...
-3. See error
+## 📚 Documentation
 
-**Expected Behavior**
-What should happen
+### Updating Documentation
 
-**Actual Behavior**
-What actually happens
+- Keep README.md up to date
+- Document new features
+- Add code comments for complex logic
+- Update API documentation
 
-**Environment**
-- Device: [e.g., Redmi 9A]
-- OS: [e.g., Android 10]
-- Browser: [e.g., Chrome 120]
-- Network: [e.g., 3G]
-- Language: [e.g., Hindi]
-- Board: [e.g., CBSE Class 10]
+### Documentation Style
 
-**Screenshots**
-Add screenshots if applicable
-```
+- Use clear, concise language
+- Include code examples
+- Add screenshots when helpful
+- Keep formatting consistent
 
-## 💡 **Feature Requests**
+## 🤝 Getting Help
 
-### Feature Request Template
-```markdown
-**Problem Statement**
-What problem does this solve for Indian students?
+### Resources
 
-**Proposed Solution**
-How should this feature work?
+- **Documentation**: Check the `docs/` folder
+- **Issues**: Browse existing GitHub issues
+- **Discussions**: Join GitHub Discussions
 
-**Alternatives Considered**
-What other approaches did you consider?
+### Contact
 
-**Cultural Considerations**
-How does this fit Indian educational context?
+- **Email**: support@mindhangar.in
+- **GitHub Issues**: For bugs and features
+- **GitHub Discussions**: For questions and ideas
 
-**Target Users**
-Who will benefit from this feature?
-```
+## 📜 License
 
-## 📚 **Resources**
+By contributing, you agree that your contributions will be licensed under the same license as the project.
 
-### Indian Education System
-- [CBSE Official Website](https://cbse.gov.in/)
-- [ICSE Official Website](https://cisce.org/)
-- [JEE Main Information](https://jeemain.nta.nic.in/)
-- [NEET Information](https://neet.nta.nic.in/)
+## 🙏 Thank You!
 
-### Language Resources
-- [Unicode Standards for Indian Scripts](https://unicode.org/charts/)
-- [Google Fonts - Indian Languages](https://fonts.google.com/?subset=devanagari)
-- [Indic Language Computing](https://www.bhashaindia.com/)
-
-### Cultural Resources
-- [Indian Festivals Calendar](https://www.drikpanchang.com/)
-- [Cultural Sensitivity Guidelines](https://www.india.gov.in/)
-
-## 🤝 **Community**
-
-### Communication Channels
-- **GitHub Issues**: Bug reports and feature requests
-- **GitHub Discussions**: General questions and ideas
-- **Discord**: Real-time chat (coming soon)
-- **Email**: contact@mindhangar.in
-
-### Getting Help
-- Check documentation first
-- Search existing issues
-- Ask in GitHub Discussions
-- Be respectful and patient
-
-## 📄 **License**
-
-By contributing, you agree that your contributions will be licensed under the MIT License.
-
-## 🙏 **Acknowledgments**
-
-Thank you to all contributors who help make education accessible for Indian students!
-
-Special thanks to:
-- Native language speakers who help with translations
-- Teachers who provide educational content feedback
-- Students who test and provide user feedback
-- Cultural consultants who ensure appropriateness
+Thank you for contributing to MindHangar AI for Bharat! Your contributions help make education more accessible for millions of Indian students.
 
 ---
 
-**Questions?** Open an issue or start a discussion!
-
-**Ready to contribute?** Pick an issue labeled `good-first-issue` or `help-wanted`!
+**Happy Coding!** 🚀
